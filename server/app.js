@@ -2,7 +2,9 @@
 // - Figure out how to upload directories
 // - Figure out how to create a new directory by pressing a button
 // - Figure out how to move files from one directory to another (drag and drop maybe)
-// - Instead of showing 403 error page, redirect to /login
+// - Instead of showing 403 error page, redirect to /
+// - Make the process of making a new username and password easier for the user
+// - Move the user object into an excel document to act as a psuedo database so it isn't stored in the source code
 
 // require
 const express = require('express')
@@ -18,8 +20,8 @@ const zip = require('express-easy-zip')
 // variables
 const app = express()
 const port = 3000
+const storagePath = __dirname.replace('/server', '') + '/users/username/home'
 const views = (file) => `${__dirname}/views/${file}`
-const storagePath = '/Users/alanconstantino/Desktop/pi-server/users/alanc/home'
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, storagePath)
@@ -38,8 +40,8 @@ const upload = multer({ storage: storage })
 
 // username and password
 const user = {
-    username: 'alanc',
-    password: '$2b$10$aYaX4KpQAxn0B.46LBuzIOxRwBodvZsIW/.0JCTYozMSgh3MD0OnK'
+    username: 'username',
+    password: '$2b$10$6EwITJ7wXFDxUR0wquEg6enrkQnGGJCd2UQZZzAFdxwCE6HsUXojO'
 }
 
 app.use(session({
@@ -50,10 +52,7 @@ app.use(session({
 app.use(express.static(__dirname + '/public'))
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use('/home', checkUserAuth, express.static(storagePath),
-    serveIndex(
-        storagePath,
-        { 'template': `${views('home.html')}` }
-    )
+    serveIndex(storagePath, { 'template': `${views('home.html')}` })
 )
 app.use(bodyParser.json())
 app.use(bodyParser.text())
@@ -83,6 +82,12 @@ app.get('/downloadZip', checkUserAuth, (req, res) => {
 })
 
 app.post('/loginAuth', async (req, res) => {
+    // MAKING A PASSWORD
+    // console.log(req.body.password)
+    // bcrypt.hash(req.body.password, 10, (err, hashedPassword) => {
+    //     if (err) return res.status(400).send()
+    //     console.log(hashedPassword)
+    // })
     try {
         const usernamesMatch = req.body.username === user.username
         const passwordsMatch = await bcrypt.compare(req.body.password, user.password)
