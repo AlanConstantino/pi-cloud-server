@@ -10,6 +10,7 @@ You can think of this as a dropbox-like clone. Essentially it's a server that ru
 - [Changing default login credentials](#changing-default-login-credentials)
   * [Changing the default username](#changing-the-default-username)
   * [Changing the default password](#changing-the-default-password)
+- [Todo](#todo)
 
 ## Install
 ```
@@ -98,3 +99,11 @@ I will make changing your username and password easier in the future, but for no
 10. Restart the app and login with your new username/password.
     - ```^C``` to stop the app if it's running in the command line
     - ```npm run server```
+    
+## Todo
+- Figure out how to upload directories
+- Figure out how to create a new directory by pressing a button
+- Figure out how to move files from one directory to another (drag and drop maybe)
+- Instead of showing 403 error page, redirect to /
+- Make the process of making a new username and password easier for the user
+- Move the user object into an excel document to act as a psuedo database so it isn't stored in the source code
