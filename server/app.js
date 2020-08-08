@@ -1,0 +1,162 @@
+// TODO:
+// - Figure out how to upload directories
+// - Figure out how to create a new directory by pressing a button
+// - Figure out how to move files from one directory to another (drag and drop maybe)
+// - Instead of showing 403 error page, redirect to /login
+
+// require
+const express = require('express')
+const bodyParser = require('body-parser')
+const bcrypt = require('bcrypt')
+const session = require('express-session')
+const serveIndex = require('serve-index')
+const multer = require('multer')
+const fs = require('fs')
+const nodePath = require('path')
+const zip = require('express-easy-zip')
+
+// variables
+const app = express()
+const port = 3000
+const views = (file) => `${__dirname}/views/${file}`
+const storagePath = '/Users/alanconstantino/Desktop/pi-server/users/alanc/home'
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, storagePath)
+    },
+    filename: (req, file, cb) => {
+        const fileExists = fs.existsSync(nodePath.join(storagePath, file.originalname))
+        const [, ext] = file.mimetype.split('/')
+        if (fileExists) {
+            const [name,] = file.originalname.split(`.${ext}`)
+            return cb(null, `${name}-copy.${ext}`)
+        }
+        return cb(null, file.originalname)
+    }
+})
+const upload = multer({ storage: storage })
+
+// username and password
+const user = {
+    username: 'alanc',
+    password: '$2b$10$aYaX4KpQAxn0B.46LBuzIOxRwBodvZsIW/.0JCTYozMSgh3MD0OnK'
+}
+
+app.use(session({
+    secret: '588673a595e29fcd75e4567768d0f601',
+    resave: false,
+    saveUninitialized: false
+}))
+app.use(express.static(__dirname + '/public'))
+app.use(bodyParser.urlencoded({ extended: true }))
+app.use('/home', checkUserAuth, express.static(storagePath),
+    serveIndex(
+        storagePath,
+        { 'template': `${views('home.html')}` }
+    )
+)
+app.use(bodyParser.json())
+app.use(bodyParser.text())
+app.use(zip())
+
+app.get('/', redirectToMenuIfLoggedIn, (req, res) => res.sendFile(views('login.html')))
+
+app.get('/menu', checkUserAuth, (req, res) => res.sendFile(views('menu.html')))
+
+app.get('/logout', checkUserAuth, (req, res) => {
+    req.session.destroy((err) => {
+        if (err) return res.status(500).send(err)
+        return res.status(200).redirect('/')
+    })
+})
+
+app.get('/upload', checkUserAuth, (req, res) => res.sendFile(views('/upload.html')))
+
+app.get('/downloadZip', checkUserAuth, (req, res) => {
+    const noFiles = req.session.files === undefined || req.session.files.length === 0
+    if (noFiles) return res.status(400).send()
+    const filesToDownload = {
+        files: req.session.files,
+        filename: 'files.zip'
+    }
+    res.zip(filesToDownload)
+})
+
+app.post('/loginAuth', async (req, res) => {
+    try {
+        const usernamesMatch = req.body.username === user.username
+        const passwordsMatch = await bcrypt.compare(req.body.password, user.password)
+        if (usernamesMatch && passwordsMatch) {
+            req.session.isUserAuth = true
+            return res.status(200).redirect('/menu')
+        }
+        return res.status(401).redirect('/')
+    } catch {
+        return res.status(500).send()
+    }
+})
+
+app.post('/uploadAuth', checkUserAuth, upload.array('uploaded-files'), (req, res) => {
+    if (req.files.length > 0) return res.status(200).send()
+    return res.status(500).send()
+})
+
+app.post('/download', checkUserAuth, (req, res) => {
+    const fileNamesExist = (req.body.fileNames.length === undefined) || (req.body.fileNames.length === 0)
+    if (fileNamesExist) return res.status(400).send()
+    const files = []
+    req.body.fileNames.forEach(name => files.push({ path: `${storagePath}${name}`, name }))
+    req.session.files = files
+    return res.status(200).send()
+})
+
+// called whenever 'Delete' button is clicked with checkmarked files
+app.delete('/deleteMultiple', checkUserAuth, (req, res) => {
+    const files = req.body.fileNames
+    files.forEach(file => {
+        const filePath = storagePath + file
+        const isDirectory = fs.existsSync(filePath) && fs.lstatSync(filePath).isDirectory();
+        if (isDirectory) {
+            fs.rmdir(filePath, { recursive: true }, (err) => {
+                if (err) return res.status(400).send(err)
+                console.log('Directory has been deleted.')
+            })
+        } else {
+            fs.unlink(filePath, (err) => {
+                if (err) return res.status(400).send(err)
+                console.log('File has been deleted successfully.')
+            })
+        }
+    })
+    return res.status(200).send()
+})
+
+// only gets called when you upload a file then click on the remove link attached to dropzone
+app.delete('/deleteFile', checkUserAuth, (req, res) => {
+    const fileName = req.body.fileName
+    if (!fileName) return res.status(500).send('File does not exist.')
+    const pathToFile = `${storagePath}/${fileName}`
+    fs.unlink(pathToFile, (err) => {
+        if (err) return res.status(500).send(err)
+    })
+    return res.status(200).send('Successfully deleted file.')
+})
+
+
+
+// MIDDLEWARE
+//////////////////////////////////////////////
+
+// checks for user authentication
+function checkUserAuth(req, res, next) {
+    if (req.session.isUserAuth) return next()
+    return res.status(403).send()
+}
+
+// is user logged in
+function redirectToMenuIfLoggedIn(req, res, next) {
+    if (req.session.isUserAuth) return res.redirect('/menu')
+    return next()
+}
+
+app.listen(port, () => console.log(`Example app listening at http://localhost:${port}`))

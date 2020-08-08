@@ -1,0 +1,36 @@
+body {
+    margin-top: 1rem;
+    background-color: lavender;
+}
+
+.centered-title {
+    text-align: center;
+}
+
+#dropzoneArea {
+    margin-top: 1rem;
+    border: 2px dashed #00008d;
+    background-color: #d2d2e6;
+}
+
+.hide {
+    display: none;
+}
+
+.button-group {
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.button-group-flex {
+    display: flex;
+    margin-bottom: 0.5rem;
+}
+
+.button-group-flex > * {
+    flex-grow: 1;
+}
+
+.button-group-flex input:nth-child(2) {
+    margin: 0 0.5rem;
+}
