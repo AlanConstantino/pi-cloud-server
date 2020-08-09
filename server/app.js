@@ -23,7 +23,13 @@ const storagePath = __dirname.replace('/server', '') + '/users/username/home'
 const views = (file) => `${__dirname}/views/${file}`
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, storagePath)
+        const path = req.headers.path
+        if (path !== undefined && path !== '') {
+            const newPath = path.replace('?path=', '')
+            const newStoragePath = storagePath.replace('/home', '') + newPath
+            return cb(null, newStoragePath)
+        }
+        return cb(null, storagePath)
     },
     filename: (req, file, cb) => {
         const fileExists = fs.existsSync(nodePath.join(storagePath, file.originalname))
@@ -50,7 +56,7 @@ app.use(session({
 }))
 app.use(express.static(__dirname + '/public'))
 app.use(bodyParser.urlencoded({ extended: true }))
-app.use('/home', checkUserAuth, express.static(storagePath),
+app.use('/home', express.static(storagePath),
     serveIndex(storagePath, { 'template': `${views('home.html')}` })
 )
 app.use(bodyParser.json())
@@ -59,18 +65,20 @@ app.use(zip())
 
 app.get('/', redirectToMenuIfLoggedIn, (req, res) => res.sendFile(views('login.html')))
 
-app.get('/menu', checkUserAuth, (req, res) => res.sendFile(views('menu.html')))
+app.get('/menu', (req, res) => res.sendFile(views('menu.html')))
 
-app.get('/logout', checkUserAuth, (req, res) => {
+app.get('/logout', (req, res) => {
     req.session.destroy((err) => {
         if (err) return res.status(500).send(err)
         return res.status(200).redirect('/')
     })
 })
 
-app.get('/upload', checkUserAuth, (req, res) => res.sendFile(views('/upload.html')))
+app.get('/upload', (req, res) => {
+    res.sendFile(views('/upload.html'))
+})
 
-app.get('/downloadZip', checkUserAuth, (req, res) => {
+app.get('/downloadZip', (req, res) => {
     const noFiles = req.session.files === undefined || req.session.files.length === 0
     if (noFiles) return res.status(400).send()
     const filesToDownload = {
@@ -80,7 +88,7 @@ app.get('/downloadZip', checkUserAuth, (req, res) => {
     res.zip(filesToDownload)
 })
 
-app.get('/createFolder', checkUserAuth, (req, res) => {
+app.get('/createFolder', (req, res) => {
     const pathName = req.query.path
     const dirName = req.query.dirName
     if (!pathName || !dirName) return res.status(400).redirect('/home')
@@ -112,12 +120,16 @@ app.post('/loginAuth', async (req, res) => {
     }
 })
 
-app.post('/uploadAuth', checkUserAuth, upload.array('uploaded-files'), (req, res) => {
+app.post('/uploadAuth', upload.array('uploaded-files'), (req, res) => {
+    // const path = req.headers.path.replace('?path=', '')
+    // const files = req.files
+    // files.forEach(file => file.destination = file.destination.replace('/home', path))
+    // console.log(files)
     if (req.files.length > 0) return res.status(200).send()
     return res.status(500).redirect('/upload')
 })
 
-app.post('/download', checkUserAuth, (req, res) => {
+app.post('/download', (req, res) => {
     const fileNamesExist = (req.body.fileNames.length === undefined) || (req.body.fileNames.length === 0)
     if (fileNamesExist) return res.status(400).send()
     const files = []
@@ -127,7 +139,7 @@ app.post('/download', checkUserAuth, (req, res) => {
 })
 
 // called whenever 'Delete' button is clicked with checkmarked files
-app.delete('/deleteMultiple', checkUserAuth, (req, res) => {
+app.delete('/deleteMultiple', (req, res) => {
     const files = req.body.fileNames
     files.forEach(file => {
         const filePath = storagePath + file
@@ -148,10 +160,15 @@ app.delete('/deleteMultiple', checkUserAuth, (req, res) => {
 })
 
 // only gets called when you upload a file then click on the remove link attached to dropzone
-app.delete('/deleteFile', checkUserAuth, (req, res) => {
+app.delete('/deleteFile', (req, res) => {
+    let pathToFile = ''
     const fileName = req.body.fileName
     if (!fileName) return res.status(500).send('File does not exist.')
-    const pathToFile = `${storagePath}/${fileName}`
+    if (req.query.path === undefined || req.query.path === '') {
+        pathToFile = storagePath + '/' + fileName
+    } else {
+        pathToFile = `${storagePath.replace('/home', '')}${req.query.path.replace('?path=')}${fileName}`
+    }
     fs.unlink(pathToFile, (err) => {
         if (err) return res.status(500).send(err)
     })

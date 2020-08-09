@@ -129,10 +129,13 @@ selectAllBtn.addEventListener('click', () => {
 })
 
 const menuBtn = document.getElementById('menu-btn')
-menuBtn.addEventListener('click', () => window.location.href = `${window.location.origin}/menu`)
+menuBtn.addEventListener('click', () => window.location.href = createUrl('/menu'))
 
 const uploadBtn = document.getElementById('upload-btn')
-uploadBtn.addEventListener('click', () => window.location.href = `${window.location.origin}/upload`)
+uploadBtn.addEventListener('click', () => {
+    const path = window.location.pathname
+    window.location.href = createUrl(`/upload/?path=${path}`)
+})
 
 // sends GET request to '/createFolder' with dirName and path passed in the URL
 const modalForm = document.getElementById('create-folder-form-modal')

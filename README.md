@@ -110,4 +110,4 @@ I will make changing your username and password easier in the future, but for no
 - [x] Instead of showing 403 error page, redirect to /
 - [ ] Make the process of making a new username and password easier for the user
 - [ ] Move the user object into an excel document to act as a psuedo database so it isn't stored in the source code
-- [ ] When clicking on the upload button in '/home', instead of redirecting to '/upload', bring up a modal that has dropzone within it and upload files that way.
+- [x] When clicking on the upload button in '/home', instead of redirecting to '/upload', bring up a modal that has dropzone within it and upload files that way. (Implemented a similar idea, modal wasn't working)

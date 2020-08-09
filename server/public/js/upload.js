@@ -1,5 +1,8 @@
 async function deleteFileFromServer(file) {
-    const url = `${location.origin}/deleteFile`
+    let url = `${location.origin}/deleteFile`
+    if (window.location.search !== undefined && window.location.search !== '') {
+        url += `/${window.location.search}`
+    }
     const options = {
         method: 'delete',
         headers: { 'Content-Type': 'application/json' },
@@ -28,7 +31,8 @@ Dropzone.options.dropzoneArea = {
     dictRemoveFile: 'Remove',
     init: function () {
         this.hiddenFileInput.setAttribute("webkitdirectory", true)
-    }
+    },
+    headers: { path: window.location.search }
 };
 
 const url = (route) => `${location.origin}${route}`
