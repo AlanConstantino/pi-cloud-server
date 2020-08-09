@@ -13,6 +13,7 @@ async function deleteFileFromServer(file) {
 Dropzone.options.dropzoneArea = {
     paramName: 'uploaded-files',
     addRemoveLinks: true,
+    maxFilesize: null,
     removedfile: async function (file) {
         // sends DELETE request to server to remove file
         const response = await deleteFileFromServer({ 'fileName': file.name })
