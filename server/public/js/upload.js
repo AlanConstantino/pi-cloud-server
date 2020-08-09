@@ -25,7 +25,10 @@ Dropzone.options.dropzoneArea = {
         return (_ref = file.previewElement) != null ? _ref.parentNode.removeChild(file.previewElement) : void 0;
     },
     dictDefaultMessage: 'Drop file(s) here or click to upload',
-    dictRemoveFile: 'Remove'
+    dictRemoveFile: 'Remove',
+    init: function () {
+        this.hiddenFileInput.setAttribute("webkitdirectory", true)
+    }
 };
 
 const url = (route) => `${location.origin}${route}`
