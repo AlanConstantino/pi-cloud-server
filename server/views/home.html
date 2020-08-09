@@ -35,18 +35,46 @@
         <!-- Form -->
         <div class="row">
             <div class="col">
-                <form id="checkbox-form">
-                    <div class="button-group-flex">
-                        <input id="download-selected-btn" type="submit" class="btn btn-primary" value="Download">
-                        <input id="select-all-btn" type="button" class="btn btn-dark" value="Select all">
-                        <input id="delete-btn" type="button" class="btn btn-danger" value="Delete">
+                <!-- Buttons for selecting, downloading, and deleting files -->
+                <div class="button-group-flex">
+                    <input id="download-selected-btn" type="submit" class="btn btn-primary" value="Download">
+                    <input id="select-all-btn" type="button" class="btn btn-dark" value="Select all">
+                    <input id="delete-btn" type="button" class="btn btn-danger" value="Delete">
+                </div>
+
+                <!-- Button for "create a folder" modal -->
+                <div class="button-group-flex">
+                    <input type="button" class="btn btn-primary" value="Create folder" data-toggle="modal"
+                        data-target="#createFolderModal">
+                </div>
+
+                <!-- "Create a folder" modal -->
+                <div class="modal fade" id="createFolderModal" tabindex="-1" role="dialog"
+                    aria-labelledby="createFolderModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                            <form id="create-folder-form-modal">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="createFolderModalLabel">Create a folder</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <label for="folder-name-modal" class="col-form-label">Enter a name:</label>
+                                    <input required id="folder-name-modal" class="form-control" type="text">
+                                </div>
+                                <div class="modal-footer button-group-flex">
+                                    <input type="button" class="btn btn-secondary" data-dismiss="modal" value="Close">
+                                    <input id="create-modal-btn" type="submit" class="btn btn-primary" value="Create">
+                                </div>
+                            </form>
+                        </div>
                     </div>
-                    <!-- <div class="button-group">
-                        <input id="download-selected-btn" type="submit" class="btn btn-primary btn-block"
-                            value="Download">
-                        <input id="select-all-btn" type="button" class="btn btn-dark btn-block" value="Select all">
-                        <input id="delete-btn" type="button" class="btn btn-danger btn-block" value="Delete">
-                    </div> -->
+                </div>
+
+                <!-- Table -->
+                <form id="checkbox-form">
                     <div class="form-group table-responsive">
                         <table class="table table-striped table-dark">
                             <thead>

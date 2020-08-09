@@ -104,8 +104,10 @@ I will make changing your username and password easier in the future, but for no
     
 ## Todo
 - [ ] Figure out how to upload directories
-- [ ] Figure out how to create a new directory by pressing a button
+  - Don't think it's possible as of right now with Dropzone. The Dropzone docs don't mention anything about uploading a directory. Will have to probably edit their source code to make this possible.
+- [x] Figure out how to create a new directory by pressing a button
 - [ ] Figure out how to move files from one directory to another (drag and drop maybe)
 - [x] Instead of showing 403 error page, redirect to /
 - [ ] Make the process of making a new username and password easier for the user
 - [ ] Move the user object into an excel document to act as a psuedo database so it isn't stored in the source code
+- [ ] When clicking on the upload button in '/home', instead of redirecting to '/upload', bring up a modal that has dropzone within it and upload files that way.

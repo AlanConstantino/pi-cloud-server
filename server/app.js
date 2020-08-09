@@ -1,9 +1,9 @@
 // TODO:
 // - Figure out how to upload directories
-// - Figure out how to create a new directory by pressing a button
 // - Figure out how to move files from one directory to another (drag and drop maybe)
 // - Make the process of making a new username and password easier for the user
 // - Move the user object into an excel document to act as a psuedo database so it isn't stored in the source code
+// - When clicking on the upload button in '/home', instead of redirecting to '/upload', bring up a modal that has dropzone within it and upload files that way.
 
 // require
 const express = require('express')
@@ -78,6 +78,18 @@ app.get('/downloadZip', checkUserAuth, (req, res) => {
         filename: 'files.zip'
     }
     res.zip(filesToDownload)
+})
+
+app.get('/createFolder', checkUserAuth, (req, res) => {
+    const pathName = req.query.path
+    const dirName = req.query.dirName
+    if (!pathName || !dirName) return res.status(400).redirect('/home')
+
+    const fullPath = storagePath.replace('/home', pathName) + dirName
+    fs.mkdir(fullPath, (err) => {
+        if (err) return res.status(400).redirect(pathName)
+        else return res.status(200).redirect(pathName)
+    })
 })
 
 app.post('/loginAuth', async (req, res) => {
