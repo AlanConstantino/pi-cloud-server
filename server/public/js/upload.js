@@ -24,7 +24,8 @@ Dropzone.options.dropzoneArea = {
         let _ref;
         return (_ref = file.previewElement) != null ? _ref.parentNode.removeChild(file.previewElement) : void 0;
     },
-    dictDefaultMessage: "Drop file(s) here or click to upload",
+    dictDefaultMessage: 'Drop file(s) here or click to upload',
+    dictRemoveFile: 'Remove'
 };
 
 const url = (route) => `${location.origin}${route}`
