@@ -3,7 +3,6 @@
 // - Figure out how to move files from one directory to another (drag and drop maybe)
 // - Make the process of making a new username and password easier for the user
 // - Move the user object into an excel document to act as a psuedo database so it isn't stored in the source code
-// - When clicking on the upload button in '/home', instead of redirecting to '/upload', bring up a modal that has dropzone within it and upload files that way.
 
 // require
 const express = require('express')
@@ -121,10 +120,6 @@ app.post('/loginAuth', async (req, res) => {
 })
 
 app.post('/uploadAuth', upload.array('uploaded-files'), (req, res) => {
-    // const path = req.headers.path.replace('?path=', '')
-    // const files = req.files
-    // files.forEach(file => file.destination = file.destination.replace('/home', path))
-    // console.log(files)
     if (req.files.length > 0) return res.status(200).send()
     return res.status(500).redirect('/upload')
 })
