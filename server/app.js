@@ -2,7 +2,6 @@
 // - Figure out how to upload directories
 // - Figure out how to create a new directory by pressing a button
 // - Figure out how to move files from one directory to another (drag and drop maybe)
-// - Instead of showing 403 error page, redirect to /
 // - Make the process of making a new username and password easier for the user
 // - Move the user object into an excel document to act as a psuedo database so it isn't stored in the source code
 
@@ -155,7 +154,7 @@ app.delete('/deleteFile', checkUserAuth, (req, res) => {
 // checks for user authentication
 function checkUserAuth(req, res, next) {
     if (req.session.isUserAuth) return next()
-    return res.status(403).send()
+    return res.status(403).redirect('/')
 }
 
 // is user logged in
