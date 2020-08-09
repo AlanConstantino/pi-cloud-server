@@ -102,7 +102,7 @@ app.post('/loginAuth', async (req, res) => {
 
 app.post('/uploadAuth', checkUserAuth, upload.array('uploaded-files'), (req, res) => {
     if (req.files.length > 0) return res.status(200).send()
-    return res.status(500).send()
+    return res.status(500).redirect('/upload')
 })
 
 app.post('/download', checkUserAuth, (req, res) => {
