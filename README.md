@@ -103,9 +103,9 @@ I will make changing your username and password easier in the future, but for no
     - ```npm run server```
     
 ## Todo
-[ ] Figure out how to upload directories
-[ ] Figure out how to create a new directory by pressing a button
-[ ] Figure out how to move files from one directory to another (drag and drop maybe)
-[x] Instead of showing 403 error page, redirect to /
-[ ] Make the process of making a new username and password easier for the user
-[ ] Move the user object into an excel document to act as a psuedo database so it isn't stored in the source code
+- [ ] Figure out how to upload directories
+- [ ] Figure out how to create a new directory by pressing a button
+- [ ] Figure out how to move files from one directory to another (drag and drop maybe)
+- [x] Instead of showing 403 error page, redirect to /
+- [ ] Make the process of making a new username and password easier for the user
+- [ ] Move the user object into an excel document to act as a psuedo database so it isn't stored in the source code
