@@ -111,8 +111,8 @@ deleteBtn.addEventListener('click', async (e) => {
     const url = createUrl('/deleteMultiple')
     const data = { fileNames: listOfFileNames }
     const response = await sendFileNamesToServer(url, data, 'DELETE')
-    if (response.status === 200) location.reload()
-    if (response.status === 400) alert('Error in deleting file(s).')
+    if (response.status === 200) return location.reload()
+    if (response.status === 400) return alert('Error in deleting file(s).')
 
     // reset form
     checkboxForm.reset()
@@ -137,12 +137,47 @@ uploadBtn.addEventListener('click', () => {
     window.location.href = createUrl(`/upload/?path=${path}`)
 })
 
+
+const isValid = (input) => {
+    if (input === undefined || input === '' || input === null || !input) return false
+    return true
+}
+
 // sends GET request to '/createFolder' with dirName and path passed in the URL
 const createFolderModalForm = document.getElementById('create-folder-form-modal')
 createFolderModalForm.addEventListener('submit', (e) => {
     e.preventDefault()
-    const dirName = document.getElementById('folder-name-modal').value.trim() // add a check for empty dirName
-    if (dirName === undefined || !dirName || dirName === '') return
+    const dirName = document.getElementById('folder-name-modal').value.trim()
+    if (!isValid(dirName)) return alert(`'${dirName}' is not valid`)
     const path = window.location.pathname
     window.location.href = createUrl(`/createFolder/?path=${path}&dirName=${dirName}`)
+})
+
+const moveToBtn = document.getElementById('move-to-btn')
+moveToBtn.addEventListener('click', () => {
+    const checkedBoxes = getAllCheckedBoxes(checkboxes)
+    if (!checkedBoxesAreValid(checkedBoxes)) {
+        removeAttribute(moveToBtn, 'data-toggle')
+        return alert('You must select at least one box.')
+    }
+    addAttribute(moveToBtn, 'data-toggle', 'modal')
+    const listOfFiles = saveCheckedBoxesAsAListOfPaths(checkedBoxes)
+
+    // the following event won't ever trigger if moveToBtn is never clicked,
+    // hence why it's nested in the moveToBtn 'click' event listener
+    const moveToModalForm = document.getElementById('move-to-form-modal')
+    moveToModalForm.addEventListener('submit', async (e) => {
+        e.preventDefault()
+        let destinationDir = document.getElementById('directory-path-modal').value.trim()
+        if (!isValid(destinationDir)) return alert(`'${destinationDir}' is not valid`)   // make sure destinationDir is valid
+        if (!destinationDir.startsWith('/')) destinationDir = '/' + destinationDir       // make sure destinationDir starts with a '/'
+
+        // sending data to backend
+        const url = createUrl('/moveTo')
+        const data = { destinationDir, listOfFiles }
+        const response = await sendFileNamesToServer(url, data, 'POST')
+        const message = await response.text()
+        if (response.status === 200) return location.reload()
+        if (response.status === 400) return alert(`Error in moving file(s).\n${message}`)
+    })
 })

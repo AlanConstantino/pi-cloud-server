@@ -1,6 +1,4 @@
 // TODO:
-// - Figure out how to upload directories
-// - Figure out how to move files from one directory to another (drag and drop maybe)
 // - Make the process of making a new username and password easier for the user
 // - Move the user object into an excel document to act as a psuedo database so it isn't stored in the source code
 
@@ -60,6 +58,7 @@ app.use('/home', express.static(storagePath),
 )
 app.use(bodyParser.json())
 app.use(bodyParser.text())
+app.use(bodyParser.raw())
 app.use(zip())
 
 app.get('/', redirectToMenuIfLoggedIn, (req, res) => res.sendFile(views('login.html')))
@@ -133,6 +132,42 @@ app.post('/download', (req, res) => {
     return res.status(200).send()
 })
 
+app.post('/moveTo', (req, res) => {
+    const destinationDir = req.body.destinationDir
+    const listOfFiles = req.body.listOfFiles
+    if (destinationDir === undefined || destinationDir === '') {
+        return res.status(400).send('No destination directory specified')
+    }
+    if (listOfFiles === undefined || listOfFiles.length === 0) {
+        return res.status(400).send('No file(s) are present to move.')
+    }
+
+    const dir = storagePath + destinationDir.replace('/home', '/')
+
+    fs.access(dir, (err) => {
+        if (err) {
+            // maybe create the folder/path instead of returning an error
+            return res.status(400).send(`No directory by the name of "${err.path}" exits.`)
+        } else {
+            listOfFiles.forEach(file => {
+                const splitPath = file.split('/')
+                const fileName = splitPath[splitPath.length - 1]
+
+                const oldPath = storagePath + file
+                const newPath = dir + '/' + fileName
+                fs.rename(oldPath, newPath, (err) => {
+                    if (err) {
+                        // may be able to get rid of this if I remove fs.access altogether
+                        return res.status(400).send('Old path or new path may be incorrect.\n' + err)
+                    } else {
+                        return res.status(200).send('Successfully moved file(s).')
+                    }
+                })
+            })
+        }
+    })
+})
+
 // called whenever 'Delete' button is clicked with checkmarked files
 app.delete('/deleteMultiple', (req, res) => {
     const files = req.body.fileNames
@@ -141,17 +176,24 @@ app.delete('/deleteMultiple', (req, res) => {
         const isDirectory = fs.existsSync(filePath) && fs.lstatSync(filePath).isDirectory();
         if (isDirectory) {
             fs.rmdir(filePath, { recursive: true }, (err) => {
-                if (err) return res.status(400).send(err)
-                console.log('Directory has been deleted.')
+                if (err) {
+                    return res.status(400).send(err)
+                } else {
+                    console.log('Directory has been deleted.')
+                    return res.status(200).send()
+                }
             })
         } else {
             fs.unlink(filePath, (err) => {
-                if (err) return res.status(400).send(err)
-                console.log('File has been deleted successfully.')
+                if (err) {
+                    return res.status(400).send(err)
+                } else {
+                    console.log('File has been deleted successfully.')
+                    return res.status(200).send()
+                }
             })
         }
     })
-    return res.status(200).send()
 })
 
 // only gets called when you upload a file then click on the remove link attached to dropzone
@@ -165,9 +207,12 @@ app.delete('/deleteFile', (req, res) => {
         pathToFile = `${storagePath.replace('/home', '')}${req.query.path.replace('?path=')}${fileName}`
     }
     fs.unlink(pathToFile, (err) => {
-        if (err) return res.status(500).send(err)
+        if (err) {
+            return res.status(500).send(err)
+        } else {
+            return res.status(200).send('File has been deleted successfully.')
+        }
     })
-    return res.status(200).send('Successfully deleted file.')
 })
 
 
