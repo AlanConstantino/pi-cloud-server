@@ -28,19 +28,15 @@ Note: I tried to keep this project as simple as possible... keyword "tried."
 &#38;
 
 ## Table of Contents
-- [pi-server](#pi-server)
-  - [Tech Stack](#tech-stack)
-  - [Libraries](#libraries)
-  - [Emoji Legend](#emoji-legend)
-  - [Table of Contents](#table-of-contents)
-  - [Install](#install)
-  - [Running the server](#running-the-server)
-  - [Default login credentials](#default-login-credentials)
-  - [Changing default login credentials](#changing-default-login-credentials)
-    - [Changing the default username](#changing-the-default-username)
-    - [Changing the default password](#changing-the-default-password)
-  - [Todo](#todo)
-
+- [pi-cloud-server](#pi-cloud-server)
+  * [Install](#install)
+  * [Running the server](#running-the-server)
+  * [Default login credentials](#default-login-credentials)
+  * [Changing default login credentials](#changing-default-login-credentials)
+    + [Changing the default username](#changing-the-default-username)
+    + [Changing the default password](#changing-the-default-password)
+  * [Todo](#todo)
+  
 ## Install
 ```
 git clone https://github.com/AlanConstantino/pi-server.git
