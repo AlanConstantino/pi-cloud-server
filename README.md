@@ -3,8 +3,34 @@ A pi server that can be accessed through the web.
 
 You can think of this as a dropbox-like clone. Essentially it's a server that runs on a pi (or any computer really) and you can upload/download files through a web interface.
 
+I tried to keep this project as simple as possible... keyword "tried."
+
+## Tech Stack
+- [Boostrap](https://getbootstrap.com/)
+  - For frontend
+- [Node.js](https://nodejs.org/en/)
+  - For backend
+- [Express.js](https://expressjs.com/)
+  - For API calls
+- [Google Sheets/Excel (soon)](https://www.npmjs.com/package/google-spreadsheet)
+  - For a pseudo-database
+
+## Libraries
+- [Dropzone.js](https://www.dropzonejs.com/)
+  - For drag'n'drop uploads
+
+## Emoji Legend
+❌ - not possible/not implemented  
+❗ - attention/note
+✅ - done
+🔜 - will get implemented soon/working on it
+🤷 - maybe
+
 ## Table of Contents
 - [pi-server](#pi-server)
+  - [Tech Stack](#tech-stack)
+  - [Libraries](#libraries)
+  - [Emoji Legend](#emoji-legend)
   - [Table of Contents](#table-of-contents)
   - [Install](#install)
   - [Running the server](#running-the-server)
@@ -103,11 +129,16 @@ I will make changing your username and password easier in the future, but for no
     - ```npm run server```
     
 ## Todo
-- [ ] Figure out how to upload directories
-  - Don't think it's possible as of right now with Dropzone. The Dropzone docs don't mention anything about uploading a directory. Will have to probably edit their source code to make this possible.
-- [x] Figure out how to create a new directory by pressing a button
-- [ ] Figure out how to move files from one directory to another (drag and drop maybe)
-- [x] Instead of showing 403 error page, redirect to /
-- [ ] Make the process of making a new username and password easier for the user
-- [ ] Move the user object into an excel document to act as a psuedo database so it isn't stored in the source code
-- [x] When clicking on the upload button in '/home', instead of redirecting to '/upload', bring up a modal that has dropzone within it and upload files that way. (Implemented a similar idea, modal wasn't working)
+- 🔜 Refactor code
+- 🔜 Add error handling, i.e. when the server sends an error/message, display an alert on the client's side
+- 🔜 Make the process of making a new username and password easier for the user
+- 🔜 Move the user object into an excel document to act as a psuedo database so it isn't stored in the source code
+- 🤷 Use Google Sheets as a pseudo database to store usernames and passwords
+  - Seems a bit overkill to use a fully fledged database like MySQL/MongoDB
+- ❌ Figure out how to upload directories
+  - ❗ Don't think it's possible as of right now with Dropzone. The Dropzone docs don't mention anything about uploading a directory. Will have to probably edit their source code to make this possible.
+- ✅ Figure out how to move files from one directory to another (drag and drop maybe)
+  - ❗ Basic functionality is done but it's still a little janky, play around with this to uncover bugs
+- ✅ Figure out how to create a new directory by pressing a button
+- ✅ Instead of showing 403 error page, redirect to /
+- ✅ When clicking on the upload button in '/home', instead of redirecting to '/upload', bring up a modal that has dropzone within it and upload files that way. (Implemented a similar idea, modal wasn't working)
