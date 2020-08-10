@@ -1,9 +1,9 @@
-# pi-server
-A pi server that can be accessed through the web.
+# pi-cloud-server
+A Dropbox-like cloud server with a web interface.
 
-You can think of this as a dropbox-like clone. Essentially it's a server that runs on a pi (or any computer really) and you can upload/download files through a web interface.
+Essentially, it's a server that runs on a [Pi](https://en.wikipedia.org/wiki/Raspberry_Pi) (or any computer really) that allows you to upload/download files through a web interface.
 
-I tried to keep this project as simple as possible... keyword "tried."
+Note: I tried to keep this project as simple as possible... keyword "tried."
 
 ## Tech Stack
 - [Boostrap](https://getbootstrap.com/)
