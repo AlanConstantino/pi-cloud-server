@@ -10,7 +10,6 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/favicons/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/favicons/favicon-16x16.png">
     <link rel="manifest" href="/favicons/site.webmanifest">
-    <link rel="stylesheet" href="/favicons/css/style.css">
     <link rel="stylesheet" href="/css/style.css">
     <title>Home</title>
 </head>
@@ -22,7 +21,7 @@
             <div class="col">
                 <div class="button-group">
                     <input id="menu-btn" type="button" class="btn btn-secondary btn-block" value="Menu">
-                    <input id="upload-btn" type="button" class="btn btn-primary btn-block" value="Upload">
+
                 </div>
             </div>
         </div>
@@ -47,10 +46,16 @@
                     <input id="delete-btn" type="button" class="btn btn-danger" value="Delete">
                 </div>
 
-                <!-- Button for "create a folder" modal -->
-                <div class="button-group-flex">
-                    <input type="button" class="btn btn-primary" value="Create folder" data-toggle="modal"
+                <div class="button-group">
+                    <input id="upload-btn" type="button" class="btn btn-primary btn-block" value="Upload here">
+                </div>
+
+                <!-- Buttons for modals (createFolder modal and moveTo modal) -->
+                <div class="button-group">
+                    <input type="button" class="btn btn-primary btn-block" value="Create folder" data-toggle="modal"
                         data-target="#createFolderModal">
+                    <input type="button" class="btn btn-primary btn-block" value="Move to" data-toggle="modal"
+                        data-target="#moveToModal" id="move-to-btn">
                 </div>
 
                 <!-- "Create a folder" modal -->
@@ -71,7 +76,33 @@
                                 </div>
                                 <div class="modal-footer button-group-flex">
                                     <input type="button" class="btn btn-secondary" data-dismiss="modal" value="Close">
-                                    <input id="create-modal-btn" type="submit" class="btn btn-primary" value="Create">
+                                    <input type="submit" class="btn btn-primary" value="Create">
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- "Move to" modal -->
+                <div class="modal fade" id="moveToModal" tabindex="-1" role="dialog" aria-labelledby="moveToModalLabel"
+                    aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                            <form id="move-to-form-modal">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="moveToModalLabel">Move files to</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <label for="directory-path-modal" class="col-form-label">Enter a directory
+                                        path:</label>
+                                    <input required id="directory-path-modal" class="form-control" type="text">
+                                </div>
+                                <div class="modal-footer button-group-flex">
+                                    <input type="button" class="btn btn-secondary" data-dismiss="modal" value="Close">
+                                    <input type="submit" class="btn btn-primary" value="Move">
                                 </div>
                             </form>
                         </div>
