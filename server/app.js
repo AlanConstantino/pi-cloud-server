@@ -1,7 +1,4 @@
 // TODO:
-// - Figure out how to upload directories
-// - Figure out how to create a new directory by pressing a button
-// - Figure out how to move files from one directory to another (drag and drop maybe)
 // - Make the process of making a new username and password easier for the user
 // - Move the user object into an excel document to act as a psuedo database so it isn't stored in the source code
 
@@ -23,7 +20,13 @@ const storagePath = __dirname.replace('/server', '') + '/users/username/home'
 const views = (file) => `${__dirname}/views/${file}`
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, storagePath)
+        const path = req.headers.path
+        if (path !== undefined && path !== '') {
+            const newPath = path.replace(/%20/g, ' ').replace('?path=', '')
+            const newStoragePath = storagePath.replace('/home', '') + newPath
+            return cb(null, newStoragePath)
+        }
+        return cb(null, storagePath)
     },
     filename: (req, file, cb) => {
         const fileExists = fs.existsSync(nodePath.join(storagePath, file.originalname))
@@ -50,27 +53,30 @@ app.use(session({
 }))
 app.use(express.static(__dirname + '/public'))
 app.use(bodyParser.urlencoded({ extended: true }))
-app.use('/home', checkUserAuth, express.static(storagePath),
+app.use('/home', express.static(storagePath),
     serveIndex(storagePath, { 'template': `${views('home.html')}` })
 )
 app.use(bodyParser.json())
 app.use(bodyParser.text())
+app.use(bodyParser.raw())
 app.use(zip())
 
 app.get('/', redirectToMenuIfLoggedIn, (req, res) => res.sendFile(views('login.html')))
 
-app.get('/menu', checkUserAuth, (req, res) => res.sendFile(views('menu.html')))
+app.get('/menu', (req, res) => res.sendFile(views('menu.html')))
 
-app.get('/logout', checkUserAuth, (req, res) => {
+app.get('/logout', (req, res) => {
     req.session.destroy((err) => {
         if (err) return res.status(500).send(err)
         return res.status(200).redirect('/')
     })
 })
 
-app.get('/upload', checkUserAuth, (req, res) => res.sendFile(views('/upload.html')))
+app.get('/upload', (req, res) => {
+    res.sendFile(views('/upload.html'))
+})
 
-app.get('/downloadZip', checkUserAuth, (req, res) => {
+app.get('/downloadZip', (req, res) => {
     const noFiles = req.session.files === undefined || req.session.files.length === 0
     if (noFiles) return res.status(400).send()
     const filesToDownload = {
@@ -78,6 +84,18 @@ app.get('/downloadZip', checkUserAuth, (req, res) => {
         filename: 'files.zip'
     }
     res.zip(filesToDownload)
+})
+
+app.get('/createFolder', (req, res) => {
+    const pathName = req.query.path
+    const dirName = req.query.dirName
+    if (!pathName || !dirName) return res.status(400).redirect('/home')
+
+    const fullPath = storagePath.replace('/home', pathName) + dirName
+    fs.mkdir(fullPath, (err) => {
+        if (err) return res.status(400).redirect(pathName)
+        else return res.status(200).redirect(pathName)
+    })
 })
 
 app.post('/loginAuth', async (req, res) => {
@@ -100,12 +118,12 @@ app.post('/loginAuth', async (req, res) => {
     }
 })
 
-app.post('/uploadAuth', checkUserAuth, upload.array('uploaded-files'), (req, res) => {
+app.post('/uploadAuth', upload.array('uploaded-files'), (req, res) => {
     if (req.files.length > 0) return res.status(200).send()
-    return res.status(500).send()
+    return res.status(500).redirect('/upload')
 })
 
-app.post('/download', checkUserAuth, (req, res) => {
+app.post('/download', (req, res) => {
     const fileNamesExist = (req.body.fileNames.length === undefined) || (req.body.fileNames.length === 0)
     if (fileNamesExist) return res.status(400).send()
     const files = []
@@ -114,36 +132,87 @@ app.post('/download', checkUserAuth, (req, res) => {
     return res.status(200).send()
 })
 
+app.post('/moveTo', (req, res) => {
+    const destinationDir = req.body.destinationDir
+    const listOfFiles = req.body.listOfFiles
+    if (destinationDir === undefined || destinationDir === '') {
+        return res.status(400).send('No destination directory specified')
+    }
+    if (listOfFiles === undefined || listOfFiles.length === 0) {
+        return res.status(400).send('No file(s) are present to move.')
+    }
+
+    const dir = storagePath + destinationDir.replace('/home', '/')
+
+    fs.access(dir, (err) => {
+        if (err) {
+            // maybe create the folder/path instead of returning an error
+            return res.status(400).send(`No directory by the name of "${err.path}" exits.`)
+        } else {
+            listOfFiles.forEach(file => {
+                const splitPath = file.split('/')
+                const fileName = splitPath[splitPath.length - 1]
+
+                const oldPath = storagePath + file
+                const newPath = dir + '/' + fileName
+                fs.rename(oldPath, newPath, (err) => {
+                    if (err) {
+                        // may be able to get rid of this if I remove fs.access altogether
+                        return res.status(400).send('Old path or new path may be incorrect.\n' + err)
+                    } else {
+                        return res.status(200).send('Successfully moved file(s).')
+                    }
+                })
+            })
+        }
+    })
+})
+
 // called whenever 'Delete' button is clicked with checkmarked files
-app.delete('/deleteMultiple', checkUserAuth, (req, res) => {
+app.delete('/deleteMultiple', (req, res) => {
     const files = req.body.fileNames
     files.forEach(file => {
         const filePath = storagePath + file
         const isDirectory = fs.existsSync(filePath) && fs.lstatSync(filePath).isDirectory();
         if (isDirectory) {
             fs.rmdir(filePath, { recursive: true }, (err) => {
-                if (err) return res.status(400).send(err)
-                console.log('Directory has been deleted.')
+                if (err) {
+                    return res.status(400).send(err)
+                } else {
+                    console.log('Directory has been deleted.')
+                    return res.status(200).send()
+                }
             })
         } else {
             fs.unlink(filePath, (err) => {
-                if (err) return res.status(400).send(err)
-                console.log('File has been deleted successfully.')
+                if (err) {
+                    return res.status(400).send(err)
+                } else {
+                    console.log('File has been deleted successfully.')
+                    return res.status(200).send()
+                }
             })
         }
     })
-    return res.status(200).send()
 })
 
 // only gets called when you upload a file then click on the remove link attached to dropzone
-app.delete('/deleteFile', checkUserAuth, (req, res) => {
+app.delete('/deleteFile', (req, res) => {
+    let pathToFile = ''
     const fileName = req.body.fileName
     if (!fileName) return res.status(500).send('File does not exist.')
-    const pathToFile = `${storagePath}/${fileName}`
+    if (req.query.path === undefined || req.query.path === '') {
+        pathToFile = storagePath + '/' + fileName
+    } else {
+        pathToFile = `${storagePath.replace('/home', '')}${req.query.path.replace('?path=')}${fileName}`
+    }
     fs.unlink(pathToFile, (err) => {
-        if (err) return res.status(500).send(err)
+        if (err) {
+            return res.status(500).send(err)
+        } else {
+            return res.status(200).send('File has been deleted successfully.')
+        }
     })
-    return res.status(200).send('Successfully deleted file.')
 })
 
 

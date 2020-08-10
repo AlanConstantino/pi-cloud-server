@@ -34,23 +34,11 @@ const createCheckbox = (id) => {
     return inputTag
 }
 
-// fetch request
-const sendFileNamesToServer = async (url, data, method) => {
-    const options = {
-        method: method,
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-    }
-    return await fetch(url, options)
-}
-
 const exampleRow = document.getElementById('example-row')
 const tbody = document.getElementById('tbody')
 const listItems = [...document.getElementById('files').children]
 
-listItems.forEach((item, count) => {
+listItems.forEach(item => {
     const row = cloneRowAndRemoveAttributes(exampleRow, ['id', 'class'])
     const [name, size, date] = [...item.children[0].children]
     const [rowNum, rowName, rowSize, rowDate] = [...row.children]
@@ -66,59 +54,65 @@ listItems.forEach((item, count) => {
     appendNode(rowNum, checkbox)
 })
 
-const checkboxes = [...document.getElementsByClassName('checkbox')]
+// checkbox helper functions
 const getAllCheckedBoxes = (checkboxes) => checkboxes.filter(box => box.checked)
-const checkedBoxesAreValid = (checkedBoxes) => ((checkedBoxes === undefined) || (checkedBoxes.length === 0))
+const checkedBoxesAreValid = (checkedBoxes) => ((checkedBoxes !== undefined) && (checkedBoxes.length !== 0))
+const saveCheckedBoxesAsAListOfPaths = (checkedBoxes) => {
+    const list = [];
+    const filePath = (window.location.pathname).replace('/home', '')
+    checkedBoxes.forEach(box => list.push(`${filePath}${box.id}`))
+    return list
+}
 
-const checkboxForm = document.getElementById('checkbox-form') // attach submit event listener
-checkboxForm.addEventListener('submit', async (e) => {
+// API helper functions
+const createUrl = (parameter) => window.location.origin + parameter
+const sendFileNamesToServer = async (url, data, method) => {
+    const options = {
+        method: method,
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    }
+    return await fetch(url, options)
+}
+
+const checkboxForm = document.getElementById('checkbox-form')
+const checkboxes = [...document.getElementsByClassName('checkbox')]
+
+const downloadBtn = document.getElementById('download-selected-btn')
+downloadBtn.addEventListener('click', async (e) => {
     e.preventDefault()
 
-    // making sure user has selected at least one checkbox
     const checkedBoxes = getAllCheckedBoxes(checkboxes)
-    if (checkedBoxesAreValid(checkedBoxes)) {
-        console.log('You did not select anything.')
-        return
-    }
-
-    // gathering all checked boxes
-    const listOfFileNames = [];
-    const filePath = (window.location.pathname).replace('/home', '')
-    checkedBoxes.forEach(box => listOfFileNames.push(`${filePath}${box.id}`))
+    if (!checkedBoxesAreValid(checkedBoxes)) return alert('You must select at least one box.')
+    const listOfFileNames = saveCheckedBoxesAsAListOfPaths(checkedBoxes)
 
     // sending fetch request to server
-    const url = window.location.origin + '/download'
+    const url = createUrl('/download')
     const data = { fileNames: listOfFileNames }
     const response = await sendFileNamesToServer(url, data, 'POST')
     if (response.status === 200) window.location.href = `${window.location.origin}/downloadZip`
-    if (response.status === 400) console.log('Error in deleting file(s).')
+    if (response.status === 400) alert('Error in deleting file(s).')
 
     // reset form
     checkboxForm.reset()
 })
 
-const deleteBtn = document.getElementById('delete-btn') // attach click event listener
+const deleteBtn = document.getElementById('delete-btn')
 deleteBtn.addEventListener('click', async (e) => {
     e.preventDefault()
 
-    // making sure user has selected at least one checkbox
     const checkedBoxes = getAllCheckedBoxes(checkboxes)
-    if (checkedBoxesAreValid(checkedBoxes)) {
-        console.log('You did not select anything.')
-        return
-    }
-
-    // saving each checked box as a path
-    const listOfFileNames = [];
-    const filePath = (window.location.pathname).replace('/home', '')
-    checkedBoxes.forEach(box => listOfFileNames.push(`${filePath}${box.id}`))
+    if (!checkedBoxesAreValid(checkedBoxes)) return alert('You must select at least one box.')
+    const listOfFileNames = saveCheckedBoxesAsAListOfPaths(checkedBoxes)
 
     // sending data to backend
-    const url = window.location.origin + '/deleteMultiple'
+    const url = createUrl('/deleteMultiple')
     const data = { fileNames: listOfFileNames }
     const response = await sendFileNamesToServer(url, data, 'DELETE')
-    if (response.status === 200) location.reload()
-    if (response.status === 400) console.log('Error in deleting file(s).')
+    if (response.status === 200) return location.reload()
+    if (response.status === 400) return alert('Error in deleting file(s).')
 
     // reset form
     checkboxForm.reset()
@@ -135,7 +129,55 @@ selectAllBtn.addEventListener('click', () => {
 })
 
 const menuBtn = document.getElementById('menu-btn')
-menuBtn.addEventListener('click', () => window.location.href = `${window.location.origin}/menu`)
+menuBtn.addEventListener('click', () => window.location.href = createUrl('/menu'))
 
 const uploadBtn = document.getElementById('upload-btn')
-uploadBtn.addEventListener('click', () => window.location.href = `${window.location.origin}/upload`)
+uploadBtn.addEventListener('click', () => {
+    const path = window.location.pathname
+    window.location.href = createUrl(`/upload/?path=${path}`)
+})
+
+
+const isValid = (input) => {
+    if (input === undefined || input === '' || input === null || !input) return false
+    return true
+}
+
+// sends GET request to '/createFolder' with dirName and path passed in the URL
+const createFolderModalForm = document.getElementById('create-folder-form-modal')
+createFolderModalForm.addEventListener('submit', (e) => {
+    e.preventDefault()
+    const dirName = document.getElementById('folder-name-modal').value.trim()
+    if (!isValid(dirName)) return alert(`'${dirName}' is not valid`)
+    const path = window.location.pathname
+    window.location.href = createUrl(`/createFolder/?path=${path}&dirName=${dirName}`)
+})
+
+const moveToBtn = document.getElementById('move-to-btn')
+moveToBtn.addEventListener('click', () => {
+    const checkedBoxes = getAllCheckedBoxes(checkboxes)
+    if (!checkedBoxesAreValid(checkedBoxes)) {
+        removeAttribute(moveToBtn, 'data-toggle')
+        return alert('You must select at least one box.')
+    }
+    addAttribute(moveToBtn, 'data-toggle', 'modal')
+    const listOfFiles = saveCheckedBoxesAsAListOfPaths(checkedBoxes)
+
+    // the following event won't ever trigger if moveToBtn is never clicked,
+    // hence why it's nested in the moveToBtn 'click' event listener
+    const moveToModalForm = document.getElementById('move-to-form-modal')
+    moveToModalForm.addEventListener('submit', async (e) => {
+        e.preventDefault()
+        let destinationDir = document.getElementById('directory-path-modal').value.trim()
+        if (!isValid(destinationDir)) return alert(`'${destinationDir}' is not valid`)   // make sure destinationDir is valid
+        if (!destinationDir.startsWith('/')) destinationDir = '/' + destinationDir       // make sure destinationDir starts with a '/'
+
+        // sending data to backend
+        const url = createUrl('/moveTo')
+        const data = { destinationDir, listOfFiles }
+        const response = await sendFileNamesToServer(url, data, 'POST')
+        const message = await response.text()
+        if (response.status === 200) return location.reload()
+        if (response.status === 400) return alert(`Error in moving file(s).\n${message}`)
+    })
+})

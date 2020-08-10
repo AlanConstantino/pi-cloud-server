@@ -1,5 +1,8 @@
 async function deleteFileFromServer(file) {
-    const url = `${location.origin}/deleteFile`
+    let url = `${location.origin}/deleteFile`
+    if (window.location.search !== undefined && window.location.search !== '') {
+        url += `/${window.location.search}`
+    }
     const options = {
         method: 'delete',
         headers: { 'Content-Type': 'application/json' },
@@ -13,6 +16,7 @@ async function deleteFileFromServer(file) {
 Dropzone.options.dropzoneArea = {
     paramName: 'uploaded-files',
     addRemoveLinks: true,
+    maxFilesize: null,
     removedfile: async function (file) {
         // sends DELETE request to server to remove file
         const response = await deleteFileFromServer({ 'fileName': file.name })
@@ -23,7 +27,12 @@ Dropzone.options.dropzoneArea = {
         let _ref;
         return (_ref = file.previewElement) != null ? _ref.parentNode.removeChild(file.previewElement) : void 0;
     },
-    dictDefaultMessage: "Drop file(s) here or click to upload",
+    dictDefaultMessage: 'Drop file(s) here or click to upload',
+    dictRemoveFile: 'Remove',
+    init: function () {
+        this.hiddenFileInput.setAttribute("webkitdirectory", true)
+    },
+    headers: { path: window.location.search }
 };
 
 const url = (route) => `${location.origin}${route}`
