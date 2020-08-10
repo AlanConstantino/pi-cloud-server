@@ -20,11 +20,12 @@ I tried to keep this project as simple as possible... keyword "tried."
   - For drag'n'drop uploads
 
 ## Emoji Legend
-❌ - not possible/not implemented  
-❗ - attention/note
-✅ - done
-🔜 - will get implemented soon/working on it
-🤷 - maybe
+- ❌ not possible/not implemented
+- ❗ attention/note
+- ✅ done
+- 🔜 will get implemented soon/working on it
+- 🤷 maybe
+&#38;
 
 ## Table of Contents
 - [pi-server](#pi-server)
