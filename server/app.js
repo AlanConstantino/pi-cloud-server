@@ -24,7 +24,7 @@ const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         const path = req.headers.path
         if (path !== undefined && path !== '') {
-            const newPath = path.replace('?path=', '')
+            const newPath = path.replace(/%20/g, ' ').replace('?path=', '')
             const newStoragePath = storagePath.replace('/home', '') + newPath
             return cb(null, newStoragePath)
         }
