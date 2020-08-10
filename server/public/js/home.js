@@ -138,8 +138,8 @@ uploadBtn.addEventListener('click', () => {
 })
 
 // sends GET request to '/createFolder' with dirName and path passed in the URL
-const modalForm = document.getElementById('create-folder-form-modal')
-modalForm.addEventListener('submit', (e) => {
+const createFolderModalForm = document.getElementById('create-folder-form-modal')
+createFolderModalForm.addEventListener('submit', (e) => {
     e.preventDefault()
     const dirName = document.getElementById('folder-name-modal').value.trim() // add a check for empty dirName
     if (dirName === undefined || !dirName || dirName === '') return
