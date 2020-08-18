@@ -29,13 +29,17 @@ Note: I tried to keep this project as simple as possible... keyword "tried."
 
 ## Table of Contents
 - [pi-cloud-server](#pi-cloud-server)
-  * [Install](#install)
-  * [Running the server](#running-the-server)
-  * [Default login credentials](#default-login-credentials)
-  * [Changing default login credentials](#changing-default-login-credentials)
-    + [Changing the default username](#changing-the-default-username)
-    + [Changing the default password](#changing-the-default-password)
-  * [Todo](#todo)
+  - [Tech Stack](#tech-stack)
+  - [Libraries](#libraries)
+  - [Emoji Legend](#emoji-legend)
+  - [Table of Contents](#table-of-contents)
+  - [Install](#install)
+  - [Running the server](#running-the-server)
+  - [Default login credentials](#default-login-credentials)
+  - [Changing default login credentials](#changing-default-login-credentials)
+    - [Changing the default username](#changing-the-default-username)
+    - [Changing the default password](#changing-the-default-password)
+  - [Todo](#todo)
   
 ## Install
 ```
@@ -57,6 +61,8 @@ password: password
 ```
 
 ## Changing default login credentials
+NOTE: THE LINE NUMBERS ARE OUT OF DATE!
+
 I will make changing your username and password easier in the future, but for now, you have to do the following:
 
 ### Changing the default username
