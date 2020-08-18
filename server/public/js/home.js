@@ -176,8 +176,8 @@ moveToBtn.addEventListener('click', () => {
         const url = createUrl('/moveTo')
         const data = { destinationDir, listOfFiles }
         const response = await sendFileNamesToServer(url, data, 'POST')
-        const message = await response.text()
+        const serverMessage = await response.text()
         if (response.status === 200) return location.reload()
-        if (response.status === 400) return alert(`Error in moving file(s).\n${message}`)
+        if (response.status === 400) return alert(`${serverMessage}`)
     })
 })
