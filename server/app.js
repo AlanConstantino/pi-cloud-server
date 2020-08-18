@@ -1,14 +1,14 @@
 // TODO:
 // - Make the process of making a new username and password easier for the user
 // - Move the user object into an excel document to act as a psuedo database so it isn't stored in the source code
+// - When clicking 'upload here,' make sure to add a back button to go back to the previous page instead of just having a home button
+// - Remove 'menu' and just add logout button to 'home.html'
 
 // BUGS:
 // - When moving mutliple files, it will break. You get greeted with the error message "Already sent headers." The error has
 //   something to do with trying to send another header/message to the client again, however, actually moving the files
 //   doesn't give you an error. The system will move the files for you successfully.
-//   - Have not tested moving multiple directories
-//   - Have not tested moving both directories and files
-//   - What happens when you move a directory or file into itself?
+//   - Fixed bug but have not tested on Windows/Linux
 
 // require
 const express = require('express')
@@ -30,15 +30,16 @@ const storagePath = (() => {
   const originalPath = __dirname.split(nodePath.sep)
   originalPath.pop()
   const systemAgnosticPath = nodePath.normalize(nodePath.join(...originalPath, '/users/username/home'))
+  const containsBeginningSlash = systemAgnosticPath[0] === '/' || systemAgnosticPath[0] === '\\'
+  if (!containsBeginningSlash) return nodePath.normalize('/' + systemAgnosticPath)
   return systemAgnosticPath
 })()
 
-const views = (file) => nodePath.normalize(`${__dirname}/views/${file}`)
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const path = req.headers.path
     if (path !== undefined && path !== '') {
-      const newPath = nodePath.normalize(path.replace(/%20/g, ' ').replace('?path=', ''))
+      const newPath = nodePath.normalize(removeEncodedUrlSpace(path).replace('?path=', ''))
       const newStoragePath = storagePath.replace('home', '') + newPath.slice(1, newPath.length)
       return cb(null, newStoragePath)
     }
@@ -67,7 +68,7 @@ app.use(session({
   resave: false,
   saveUninitialized: false
 }))
-app.use(express.static(__dirname + '/public'))
+app.use(express.static(nodePath.normalize(__dirname + '/public')))
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use('/home', express.static(storagePath), serveIndex(storagePath, { 'template': `${views('home.html')}` }))
 app.use(bodyParser.json())
@@ -103,7 +104,7 @@ app.get('/downloadZip', (req, res) => {
 app.get('/createFolder', (req, res) => {
   const pathName = req.query.path
   const dirName = req.query.dirName
-  if (!pathName || !dirName) return res.status(400).redirect('/home')
+  if (!isValid(pathName) && !isValid(dirName)) return res.status(400).redirect('/home')
 
   const fullPath = nodePath.normalize(storagePath.replace('home', pathName) + dirName)
   fs.mkdir(fullPath, (err) => {
@@ -139,7 +140,7 @@ app.post('/uploadAuth', upload.array('uploaded-files'), (req, res) => {
 
 app.post('/download', (req, res) => {
   const fileNamesExist = (req.body.fileNames.length === undefined) || (req.body.fileNames.length === 0)
-  if (fileNamesExist) return res.status(400).send()
+  if (!isArrayValid(req.body.fileNames)) return res.status(400).send('There is no list of files.')
   const files = []
   req.body.fileNames.forEach(name => files.push({ path: `${storagePath}${name}`, name }))
   req.session.files = files
@@ -149,14 +150,14 @@ app.post('/download', (req, res) => {
 app.post('/moveTo', (req, res) => {
   const destinationDir = req.body.destinationDir
   const listOfFiles = req.body.listOfFiles
-  if (destinationDir === undefined || destinationDir === '') {
+  if (!isValid(destinationDir)) {
     return res.status(400).send('No destination directory specified')
   }
-  if (listOfFiles === undefined || listOfFiles.length === 0) {
+  if (!isArrayValid(listOfFiles)) {
     return res.status(400).send('No file(s) are present to move.')
   }
 
-  const dir = storagePath + destinationDir.replace('/home', '/')
+  const dir = nodePath.normalize(storagePath + destinationDir.replace('/home', '/'))
 
   fs.access(dir, (err) => {
     if (err) {
@@ -164,15 +165,22 @@ app.post('/moveTo', (req, res) => {
       return res.status(400).send(`No directory by the name of "${err.path}" exits.`)
     } else {
       listOfFiles.forEach(file => {
-        const splitPath = file.split('/')
+        const splitPath = file.split(nodePath.sep)
         const fileName = splitPath[splitPath.length - 1]
 
-        const oldPath = nodePath.normalize(storagePath + file.replace(/%20/g, ' '))
+        const oldPath = nodePath.normalize(storagePath + removeEncodedUrlSpace(file))
         const newPath = nodePath.normalize(dir + '/' + fileName)
+
+        const duplicatedDirectory = nodePath.normalize(`/${fileName}/${fileName}`)
+        const isDuplicateDirectory = newPath.endsWith(duplicatedDirectory)
+        if (isDuplicateDirectory) {
+          return res.status(400).send('Can\'t move a folder into itself.\n')
+        }
+
         fs.rename(oldPath, newPath, (err) => {
           if (err) {
             // may be able to get rid of this if I remove fs.access altogether
-            return res.status(400).send('Old path or new path may be incorrect.\n' + err)
+            return res.status(400).send('The path you inputted is incorrect, try again.\n' + err)
           } else {
             return res.status(200).send('Successfully moved file(s).')
           }
@@ -185,14 +193,16 @@ app.post('/moveTo', (req, res) => {
 // called whenever 'Delete' button is clicked with checkmarked files
 app.delete('/deleteMultiple', (req, res) => {
   const files = req.body.fileNames
+  if (!isArrayValid(files)) return res.status(400).send('There are no files to delete.')
+
   files.forEach(file => {
-    const filePath = nodePath.normalize(storagePath + file.replace(/%20/g, ' '))
+    const filePath = nodePath.normalize(storagePath + removeEncodedUrlSpace(file))
     const isDirectory = fs.existsSync(filePath) && fs.lstatSync(filePath).isDirectory();
     if (isDirectory) {
       fs.rmdir(filePath, { recursive: true }, (err) => {
         if (err) {
           console.log('Error in deleting directory.')
-          return res.status(400).send(err)
+          return res.status(400).send('Error in deleting directory.\n' + err)
         } else {
           console.log('Directory has been deleted successfully.')
           return res.status(200).send()
@@ -202,10 +212,10 @@ app.delete('/deleteMultiple', (req, res) => {
       fs.unlink(filePath, (err) => {
         if (err) {
           console.log('Error in deleting file(s).')
-          return res.status(400).send(err)
+          return res.status(400).send('Error in deleting file(s).\n' + err)
         } else {
           console.log('File(s) have been deleted successfully.')
-          return res.status(200).send()
+          return res.status(200).send('File(s) have been deleted successfully.')
         }
       })
     }
@@ -216,7 +226,7 @@ app.delete('/deleteMultiple', (req, res) => {
 app.delete('/deleteFile', (req, res) => {
   let pathToFile = ''
   const fileName = req.body.fileName
-  if (!fileName) return res.status(500).send('File does not exist.')
+  if (!isValid(fileName)) return res.status(500).send('File does not exist.')
   if (req.query.path === undefined || req.query.path === '') {
     pathToFile = nodePath.normalize(storagePath + '/' + fileName)
   } else {
@@ -231,6 +241,22 @@ app.delete('/deleteFile', (req, res) => {
   })
 })
 
+
+// HELPER FUNCTIONS
+const views = (file) => nodePath.normalize(`${__dirname}/views/${file}`)
+const removeEncodedUrlSpace = string => string.replace(/%20/g, ' ')
+const isValid = input => ((input !== undefined) && (input !== '') && (input !== null) && (!input))
+const isArrayValid = array => ((array !== undefined) && (array !== null) && (array.length !== 0))
+const fileExists = path => {
+  try {
+    fs.accessSync(path, fs.constants.F_OK | fs.constants.R_OK | fs.constants.W_OK)
+    console.log('File exists, and can be read, and can be written to.')
+    return true
+  } catch (error) {
+    console.log('File does not exist, or cannot be read, or cannot be written to.')
+    return false
+  }
+}
 
 
 // MIDDLEWARE
