@@ -25,6 +25,22 @@ const zip = require('express-easy-zip')
 const app = express()
 const port = 3000
 
+// HELPER FUNCTIONS
+const views = (file) => nodePath.normalize(`${__dirname}/views/${file}`)
+const removeEncodedUrlSpace = string => string.replace(/%20/g, ' ')
+const isValid = input => ((input !== undefined) && (input !== '') && (input !== null))
+const isArrayValid = array => ((array !== undefined) && (array !== null) && (array.length !== 0))
+const fileExists = path => {
+  try {
+    fs.accessSync(path, fs.constants.F_OK | fs.constants.R_OK | fs.constants.W_OK)
+    console.log('File exists, and can be read, and can be written to.')
+    return true
+  } catch (error) {
+    console.log('File does not exist, or cannot be read, or cannot be written to.')
+    return false
+  }
+}
+
 // making the storage path system agnostic
 const storagePath = (() => {
   const originalPath = __dirname.split(nodePath.sep)
@@ -134,12 +150,11 @@ app.post('/loginAuth', async (req, res) => {
 })
 
 app.post('/uploadAuth', upload.array('uploaded-files'), (req, res) => {
-  if (req.files.length > 0) return res.status(200).send()
+  if (isArrayValid(req.files)) return res.status(200).send()
   return res.status(500).redirect('/upload')
 })
 
 app.post('/download', (req, res) => {
-  const fileNamesExist = (req.body.fileNames.length === undefined) || (req.body.fileNames.length === 0)
   if (!isArrayValid(req.body.fileNames)) return res.status(400).send('There is no list of files.')
   const files = []
   req.body.fileNames.forEach(name => files.push({ path: `${storagePath}${name}`, name }))
@@ -240,24 +255,6 @@ app.delete('/deleteFile', (req, res) => {
     }
   })
 })
-
-
-// HELPER FUNCTIONS
-const views = (file) => nodePath.normalize(`${__dirname}/views/${file}`)
-const removeEncodedUrlSpace = string => string.replace(/%20/g, ' ')
-const isValid = input => ((input !== undefined) && (input !== '') && (input !== null) && (!input))
-const isArrayValid = array => ((array !== undefined) && (array !== null) && (array.length !== 0))
-const fileExists = path => {
-  try {
-    fs.accessSync(path, fs.constants.F_OK | fs.constants.R_OK | fs.constants.W_OK)
-    console.log('File exists, and can be read, and can be written to.')
-    return true
-  } catch (error) {
-    console.log('File does not exist, or cannot be read, or cannot be written to.')
-    return false
-  }
-}
-
 
 // MIDDLEWARE
 //////////////////////////////////////////////
