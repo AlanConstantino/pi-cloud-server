@@ -1,0 +1,61 @@
+{
+    "env": {
+        "browser": true,
+        "commonjs": true,
+        "es2020": true,
+        "node": true
+    },
+    "extends": [
+        "google"
+    ],
+    "parserOptions": {
+        "ecmaVersion": 11
+    },
+    "rules": {
+        "brace-style": [
+            "error",
+            "1tbs",
+            {
+                "allowSingleLine": true
+            }
+        ],
+        "semi": [
+            "warn",
+            "always"
+        ],
+        "indent": [
+            "warn",
+            2
+        ],
+        "space-before-function-paren": [
+            "warn",
+            {
+                "anonymous": "always",
+                "named": "never",
+                "asyncArrow": "always"
+            }
+        ],
+        "max-len": [
+            "off"
+        ],
+        "object-curly-spacing": [
+            "warn",
+            "always"
+        ],
+        "comma-spacing": [
+            "warn",
+            {
+                "before": false,
+                "after": true
+            }
+        ],
+        "comma-dangle": [
+            "warn",
+            "never"
+        ],
+        "curly": [
+            "error",
+            "all"
+        ]
+    }
+}
