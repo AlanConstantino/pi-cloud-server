@@ -27,16 +27,27 @@ const app = express();
 const port = 3000;
 
 // HELPER FUNCTIONS
-const views = (file) => nodePath.normalize(`${__dirname}/views/${file}`);
-const removeEncodedUrlSpace = (string) => string.replace(/%20/g, ' ');
-const isValid = (input) => ((input !== undefined) && (input !== '') && (input !== null));
-const isArrayValid = (array) => {
+function views(file) {
+  return nodePath.normalize(`${__dirname}/views/${file}`);
+}
+
+function removeEncodedUrlSpace(string) {
+  return string.replace(/%20/g, ' ');
+}
+
+function isValid(input) {
+  return ((input !== undefined) && (input !== '') && (input !== null));
+}
+
+function isArrayValid(array) {
   return ((array !== undefined) && (array !== null) && (array.length !== 0));
-};
-const filePathExists = (path) => {
+}
+
+function filePathExists(path) {
   return fs.existsSync(path);
-};
-const fileExists = (path) => {
+}
+
+function fileExists(path) {
   try {
     fs.accessSync(path, fs.constants.F_OK | fs.constants.R_OK | fs.constants.W_OK);
     console.log('File exists, and can be read, and can be written to.');
@@ -45,7 +56,7 @@ const fileExists = (path) => {
     console.log('File does not exist, or cannot be read, or cannot be written to.');
     return false;
   }
-};
+}
 
 // making the storage path system agnostic
 const storagePath = (() => {
