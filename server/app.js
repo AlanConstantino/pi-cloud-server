@@ -73,15 +73,28 @@ function removeDirectory(path, options) {
   }
 }
 
+function writeToLogFile(text) {
+  // if file doesn't exist, it will be created
+  const file = nodePath.normalize('./log.txt');
+  // has to be a stream to avoid the EMFILE error:
+  // https://stackoverflow.com/questions/3459476/how-to-append-to-a-file-in-node/43370201#43370201
+  const stream = fs.createWriteStream(file, { flags: 'a' });
+  const date = new Date().toString();
+  stream.write(`${date}\n${text}\n\n`);
+  stream.end();
+}
+
 // making the storage path system agnostic
 const storagePath = (() => {
   const originalPath = __dirname.split(nodePath.sep);
   originalPath.pop();
   const systemAgnosticPath = nodePath.normalize(nodePath.join(...originalPath, '/users/username/home'));
   const pathContainsBeginningSlash = systemAgnosticPath[0] === nodePath.sep;
+
   if (!pathContainsBeginningSlash) {
     return nodePath.normalize('/' + systemAgnosticPath);
   }
+
   return systemAgnosticPath;
 })();
 
@@ -138,42 +151,54 @@ app.get('/menu', (req, res) => res.sendFile(views('menu.html')));
 app.get('/logout', (req, res) => {
   req.session.destroy((err) => {
     if (err) {
+      writeToLogFile('GET "/logout"\nError in destroying session.\n' + err);
       return res.status(500).send(err);
     }
+
+    writeToLogFile('GET "/logout"\nSession has been destroyed successfully.');
     return res.status(200).redirect('/');
   });
 });
 
 app.get('/upload', (req, res) => {
+  writeToLogFile('GET "/upload" request received.');
   res.sendFile(views('/upload.html'));
 });
 
 app.get('/downloadZip', (req, res) => {
   const filesAreAvailableToDownload = isArrayValid(req.session.files);
+
   if (!filesAreAvailableToDownload) {
-    return res.status(400).send();
+    writeToLogFile('GET "/downloadZip"\nError in downloading files.');
+    return res.status(400).send('Error in downloading files.');
   }
+
   const filesToDownload = {
     files: req.session.files,
     filename: 'files.zip'
   };
+
+  writeToLogFile('GET "/downloadZip"\nFiles have been downloaded successfully.');
   res.zip(filesToDownload);
 });
 
 app.get('/createFolder', (req, res) => {
   const pathName = req.query.path;
   const dirName = req.query.dirName;
+
   if (!isValid(pathName) && !isValid(dirName)) {
+    writeToLogFile('GET "/createFolder"\nUser did not specify correct path or directory name.');
     return res.status(400).redirect('/home');
   }
 
   const fullPath = nodePath.normalize(storagePath.replace('home', pathName) + dirName);
+
   fs.mkdir(fullPath, (err) => {
     if (err) {
-      console.log('Error in creating folder.');
+      writeToLogFile('GET "/createFolder"\nError in creating folder.');
       return res.status(400).redirect(pathName);
     } else {
-      console.log('Folder has been created successfully!');
+      writeToLogFile('GET "/createFolder"\nFolder has been created successfully!');
       return res.status(200).redirect(pathName);
     }
   });
@@ -189,36 +214,49 @@ app.post('/loginAuth', async (req, res) => {
   try {
     const usernamesMatch = req.body.username === user.username;
     const passwordsMatch = await bcrypt.compare(req.body.password, user.password);
+
     if (usernamesMatch && passwordsMatch) {
       req.session.isUserAuth = true;
+      writeToLogFile('POST "/loginAuth"\nUser has logged in successfully and session has been created.');
       return res.status(200).redirect('/menu');
     } else {
+      writeToLogFile('POST "/loginAuth"\nUser is not authorized to log in.');
       return res.status(401).redirect('/');
     }
   } catch (err) {
+    writeToLogFile(`POST "/loginAuth"\nAn error has occured:\n${err}`);
     return res.status(500).send('An error has occured:\n' + err);
   }
 });
 
 app.post('/uploadAuth', upload.array('uploaded-files'), (req, res) => {
   const filesAreAvailableToUpload = isArrayValid(req.files);
+
   if (!filesAreAvailableToUpload) {
+    writeToLogFile('POST "/uploadAuth"\nThere are no files to upload.');
     return res.status(500).redirect('/upload');
   }
-  return res.status(200).send();
+
+  writeToLogFile('POST "/uploadAuth"\nFile(s) have been uploaded successfully.\n' + req.files);
+  return res.status(200).send('File(s) have been uploaded successfully.');
 });
 
 app.post('/download', (req, res) => {
   const listOfFilesExist = isArrayValid(req.body.fileNames);
+
   if (!listOfFilesExist) {
-    return res.status(400).send('You did not selecte files to download.');
+    writeToLogFile('POST "/download"\nUser did not select files to download.');
+    return res.status(400).send('You did not select files to download.');
   }
   const files = [];
+
   req.body.fileNames.forEach((name) => {
     const path = `${storagePath}${name}`;
     files.push({ path, name });
   });
+
   req.session.files = files;
+  writeToLogFile('POST "/download"\nFiles have been added to the user\'s session.\n' + files);
   return res.status(200).send('Files downloaded successfully.');
 });
 
@@ -227,17 +265,20 @@ app.post('/moveTo', (req, res) => {
   const listOfFiles = req.body.listOfFiles;
 
   if (!isValid(destinationDir)) {
-    return res.status(400).send('No destination directory specified');
+    writeToLogFile('POST "/moveTo"\nNo destination directory specified.');
+    return res.status(400).send('No destination directory specified.');
   }
 
   if (!isArrayValid(listOfFiles)) {
+    writeToLogFile('POST "/moveTo"\nNo file(s) are present to move.');
     return res.status(400).send('No file(s) are present to move.');
   }
 
   const dir = nodePath.normalize(storagePath + destinationDir.replace('/home', '/'));
 
   if (!fileExists(dir)) {
-    return res.status(400).send('The path you inputted is incorrect or does not exist, try again.');
+    writeToLogFile('POST "/moveTo"\nDirectory does not exist.');
+    return res.status(400).send('The path you entered is incorrect or does not exist, try again.');
   } else {
     // if errors occur, consider changing "forEach" to "every"
     listOfFiles.forEach((file) => {
@@ -251,15 +292,18 @@ app.post('/moveTo', (req, res) => {
       const isDuplicateDirectory = newPath.endsWith(duplicatedDirectory);
 
       if (isDuplicateDirectory) {
+        writeToLogFile('POST "/moveTo"\nUser tried to move a folder into itself.');
         return res.status(400).send('Can\'t move a folder into itself.');
       }
 
       fs.rename(oldPath, newPath, (err) => {
         if (err) {
-          return res.status(400).send('The path you inputted is incorrect, try again.\n' + err);
+          writeToLogFile('POST "/moveTo"\nUser tried to move a folder into itself.');
+          return res.status(400).send('The path you entered is incorrect, try again.\n' + err);
         }
       });
     });
+    writeToLogFile('POST "/moveTo"\nFiles have been successfully moved.');
     return res.status(200).send('Successfully moved file(s).');
   }
 });
@@ -270,6 +314,7 @@ app.delete('/deleteCheckmarked', (req, res) => {
   const listOfFilesExist = isArrayValid(files);
 
   if (!listOfFilesExist) {
+    writeToLogFile('DELETE "/deleteCheckmarked"\nUser did not select any files to delete.');
     return res.status(400).send('You did not select any files to delete.');
   }
 
@@ -281,16 +326,21 @@ app.delete('/deleteCheckmarked', (req, res) => {
       const dirRemoval = removeDirectory(filePath, { recursive: true });
 
       if (!dirRemoval.wasSuccessful) {
+        writeToLogFile(`DELETE "/deleteCheckmarked"\n${dirRemoval.message}`);
         return res.status(400).send('Error in removing directory.');
       }
+
+      writeToLogFile(`DELETE "/deleteCheckmarked"\n${dirRemoval.message}`);
     } else {
       fs.unlink(filePath, (err) => {
         if (err) {
+          writeToLogFile(`DELETE "/deleteCheckmarked"\nError in deleting file(s).\n${err}`);
           return res.status(400).send('Error in deleting file(s).');
         }
       });
     }
   }
+  writeToLogFile('File(s) have been deleted successfully.\nFiles:' + files.toString());
   return res.status(200).send('File(s) have been deleted successfully.');
 });
 
@@ -300,7 +350,7 @@ app.delete('/deleteFile', checkUserAuth, (req, res) => {
   const fileName = req.body.fileName;
 
   if (!isValid(fileName)) {
-    console.log('File does not exist');
+    writeToLogFile('DELETE "/deleteFile"\nFile does not exist.');
     return res.status(400).send('File does not exist.');
   }
 
@@ -314,9 +364,10 @@ app.delete('/deleteFile', checkUserAuth, (req, res) => {
 
   fs.unlink(pathToFile, (err) => {
     if (err) {
-      console.log('Error in deleting file.\n' + err);
+      writeToLogFile(`DELETE "/deleteFile"\nError in deleting file.\n${err}`);
       return res.status(400).send('Error in deleting file.');
     } else {
+      writeToLogFile(`DELETE "/deleteFile"\nFile has been deleted successfully.`);
       return res.status(200).send('File has been deleted successfully.');
     }
   });
