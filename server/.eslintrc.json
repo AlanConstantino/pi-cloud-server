@@ -56,6 +56,11 @@
         "curly": [
             "error",
             "all"
+        ],
+        "require-jsdoc": "off",
+        "array-bracket-spacing": [
+            "error",
+            "always"
         ]
     }
 }
