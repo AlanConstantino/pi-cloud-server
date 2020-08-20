@@ -58,6 +58,21 @@ function fileExists(path) {
   }
 }
 
+function removeDirectory(path, options) {
+  const dirRemoval = { wasSuccessful: false, message: 'N/A' };
+  try {
+    const filePath = nodePath.normalize(path);
+    fs.rmdirSync(filePath, options);
+    dirRemoval.wasSuccessful = true;
+    dirRemoval.message = 'Directory has been deleted successfully.';
+  } catch (err) {
+    dirRemoval.wasSuccessful = false;
+    dirRemoval.message = err.toString();
+  } finally {
+    return dirRemoval;
+  }
+}
+
 // making the storage path system agnostic
 const storagePath = (() => {
   const originalPath = __dirname.split(nodePath.sep);
@@ -258,30 +273,24 @@ app.delete('/deleteCheckmarked', (req, res) => {
     return res.status(400).send('You did not select any files to delete.');
   }
 
-  files.forEach((file) => {
+  for (const file of files) {
     const filePath = nodePath.normalize(storagePath + removeEncodedUrlSpace(file));
-    const isDirectory = filePathExists(filePath) && fs.lstatSync(filePath).isDirectory();
+    const directoryExists = filePathExists(filePath) && fs.lstatSync(filePath).isDirectory();
 
-    if (isDirectory) {
-      fs.rmdir(filePath, { recursive: true }, (err) => {
-        if (err) {
-          console.log('Error in deleting directory.\n' + err);
-          return res.status(400).send('Error in deleting directory.');
-        } else {
-          console.log('Directory has been deleted successfully.');
-          return res.status(200).send('Directory has been deleted successfully.');
-        }
-      });
+    if (directoryExists) {
+      const dirRemoval = removeDirectory(filePath, { recursive: true });
+
+      if (!dirRemoval.wasSuccessful) {
+        return res.status(400).send('Error in removing directory.');
+      }
     } else {
       fs.unlink(filePath, (err) => {
         if (err) {
-          console.log('Error in deleting file(s).\n' + err);
           return res.status(400).send('Error in deleting file(s).');
         }
       });
     }
-  });
-  console.log('File(s) have been deleted successfully');
+  }
   return res.status(200).send('File(s) have been deleted successfully.');
 });
 
