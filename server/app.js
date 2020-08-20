@@ -62,7 +62,6 @@ const storagePath = (() => {
 // for multer (storage object)
 // only gets called when uploading files
 const destination = (req, file, cb) => {
-  console.log('DESTINATION');
   const path = req.headers.path;
   if (isValid(path)) {
     const newPath = nodePath.normalize(removeEncodedUrlSpace(path).replace('?path=', ''));
@@ -74,11 +73,10 @@ const destination = (req, file, cb) => {
 // for multer (storage object)
 // only gets called when uploading files
 const filename = (req, file, cb) => {
-  console.log('FILENAME');
   const pathExists = filePathExists(nodePath.join(storagePath, file.originalname));
-  const [, ext] = file.mimetype.split(nodePath.sep);
+  const [ , ext ] = file.mimetype.split(nodePath.sep);
   if (pathExists) {
-    const [name] = file.originalname.split(`.${ext}`);
+    const [ name ] = file.originalname.split(`.${ext}`);
     console.log(name);
     return cb(null, `${name}-copy.${ext}`);
   }
@@ -187,7 +185,7 @@ app.post('/uploadAuth', upload.array('uploaded-files'), (req, res) => {
 app.post('/download', (req, res) => {
   const listOfFilesExist = isArrayValid(req.body.fileNames);
   if (!listOfFilesExist) {
-    return res.status(400).send('There is no list of files to download.');
+    return res.status(400).send('You did not selecte files to download.');
   }
   const files = [];
   req.body.fileNames.forEach((name) => {
@@ -201,9 +199,11 @@ app.post('/download', (req, res) => {
 app.post('/moveTo', (req, res) => {
   const destinationDir = req.body.destinationDir;
   const listOfFiles = req.body.listOfFiles;
+
   if (!isValid(destinationDir)) {
     return res.status(400).send('No destination directory specified');
   }
+
   if (!isArrayValid(listOfFiles)) {
     return res.status(400).send('No file(s) are present to move.');
   }
@@ -223,6 +223,7 @@ app.post('/moveTo', (req, res) => {
 
       const duplicatedDirectory = nodePath.normalize(`/${fileName}/${fileName}`);
       const isDuplicateDirectory = newPath.endsWith(duplicatedDirectory);
+
       if (isDuplicateDirectory) {
         return res.status(400).send('Can\'t move a folder into itself.');
       }
@@ -238,35 +239,38 @@ app.post('/moveTo', (req, res) => {
 });
 
 // called whenever 'Delete' button is clicked with checkmarked files
-app.delete('/deleteMultiple', (req, res) => {
+app.delete('/deleteCheckmarked', (req, res) => {
   const files = req.body.fileNames;
   const listOfFilesExist = isArrayValid(files);
+
   if (!listOfFilesExist) {
-    return res.status(400).send('There are no files to delete.');
+    return res.status(400).send('You did not select any files to delete.');
   }
 
   files.forEach((file) => {
     const filePath = nodePath.normalize(storagePath + removeEncodedUrlSpace(file));
     const isDirectory = filePathExists(filePath) && fs.lstatSync(filePath).isDirectory();
+
     if (isDirectory) {
       fs.rmdir(filePath, { recursive: true }, (err) => {
         if (err) {
-          console.log('Error in deleting directory.');
-          return res.status(400).send('Error in deleting directory.\n' + err);
+          console.log('Error in deleting directory.\n' + err);
+          return res.status(400).send('Error in deleting directory.');
         } else {
           console.log('Directory has been deleted successfully.');
-          return res.status(200).send();
+          return res.status(200).send('Directory has been deleted successfully.');
         }
       });
     } else {
       fs.unlink(filePath, (err) => {
         if (err) {
           console.log('Error in deleting file(s).\n' + err);
-          return res.status(400).send('Error in deleting file(s).\n' + err);
+          return res.status(400).send('Error in deleting file(s).');
         }
       });
     }
   });
+  console.log('File(s) have been deleted successfully');
   return res.status(200).send('File(s) have been deleted successfully.');
 });
 
@@ -274,19 +278,24 @@ app.delete('/deleteMultiple', (req, res) => {
 app.delete('/deleteFile', checkUserAuth, (req, res) => {
   let pathToFile = '';
   const fileName = req.body.fileName;
+
   if (!isValid(fileName)) {
-    return res.status(500).send('File does not exist.');
+    console.log('File does not exist');
+    return res.status(400).send('File does not exist.');
   }
 
   if (isValid(req.query.path)) {
-    pathToFile = nodePath.normalize(storagePath + '/' + fileName);
+    const path = storagePath + '/' + fileName;
+    pathToFile = nodePath.normalize(path);
   } else {
-    pathToFile = nodePath.normalize(`${storagePath.replace('home', '')}${req.query.path.replace('?path=')}${fileName}`);
+    const path = `${storagePath.replace('home', '')}${req.query.path.replace('?path=')}${fileName}`;
+    pathToFile = nodePath.normalize(path);
   }
 
   fs.unlink(pathToFile, (err) => {
     if (err) {
-      return res.status(500).send(err);
+      console.log('Error in deleting file.\n' + err);
+      return res.status(400).send('Error in deleting file.');
     } else {
       return res.status(200).send('File has been deleted successfully.');
     }
@@ -299,8 +308,9 @@ app.delete('/deleteFile', checkUserAuth, (req, res) => {
 function checkUserAuth(req, res, next) {
   if (req.session.isUserAuth) {
     return next();
+  } else {
+    return res.status(403).redirect('/');
   }
-  return res.status(403).redirect('/');
 }
 
 // is user logged in
