@@ -34,11 +34,13 @@ Dropzone.options.dropzoneArea = {
       alert(serverMessage);
     }
 
-    // deletes dropzone thumbnail
+    // deletes reference to dropzone thumbnail
     let _ref;
     return ((_ref = file.previewElement) != null) ? _ref.parentNode.removeChild(file.previewElement) : void 0;
   },
+  // default upload message
   dictDefaultMessage: 'Drop file(s) here or click to upload',
+  // default removal link text
   dictRemoveFile: 'Remove',
   init: function () {
     this.hiddenFileInput.setAttribute('webkitdirectory', true);
