@@ -4,7 +4,8 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "server": "nodemon app.js"
+    "server": "node app.js",
+    "dev": "nodemon app.js"
   },
   "keywords": [],
   "author": "",
@@ -15,6 +16,7 @@
     "express": "^4.17.1",
     "express-easy-zip": "^1.1.5",
     "express-session": "^1.17.1",
+    "google-spreadsheet": "^3.0.13",
     "multer": "^1.4.2",
     "serve-index": "^1.9.1"
   },
