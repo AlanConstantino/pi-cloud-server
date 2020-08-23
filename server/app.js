@@ -1,16 +1,3 @@
-/* eslint-disable require-jsdoc */
-// TODO:
-// - Make the process of making a new username and password easier for the user
-// - Move the user object into an excel document to act as a psuedo database so it isn't stored in the source code
-// - When clicking 'upload here,' make sure to add a back button to go back to the previous page instead of just having a home button
-// - Remove 'menu' and just add logout button to 'home.html'
-
-// BUGS:
-// - When moving mutliple files, it will break. You get greeted with the error message "Already sent headers." The error has
-//   something to do with trying to send another header/message to the client again, however, actually moving the files
-//   doesn't give you an error. The system will move the files for you successfully.
-//   - Fixed bug but have not tested on Windows/Linux
-
 // require
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -82,7 +69,7 @@ function removeDirectory(path, options) {
 }
 
 function appendToLogFile(text) {
-  // if file doesn't exist, it will be created when stream is created
+  // if log file doesn't exist, it will be created when stream is created
   const file = nodePath.normalize('./log.txt');
   // has to be a stream to avoid the EMFILE error:
   // https://stackoverflow.com/questions/3459476/how-to-append-to-a-file-in-node/43370201#43370201

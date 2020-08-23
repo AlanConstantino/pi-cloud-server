@@ -54,4 +54,7 @@ const url = (route) => `${location.origin}${route}`;
 
 // when you click on the go back button, you go to the '/home' url route
 const goBackButton = document.getElementById('go-back-btn');
-goBackButton.addEventListener('click', () => window.location.href = url('/home'));
+goBackButton.addEventListener('click', () => {
+  const [ , path ] = window.location.href.split('?path=');
+  window.location.href = url(path);
+});
