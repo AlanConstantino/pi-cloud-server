@@ -272,7 +272,7 @@ app.post('/loginAuth', async (req, res) => {
     if (usernamesMatch && passwordsMatch) {
       req.session.isUserAuth = true;
       appendToLogFile('POST "/loginAuth"\nUser has logged in successfully and session has been created.');
-      return res.status(200).redirect('/menu');
+      return res.status(200).redirect('/home');
     } else {
       appendToLogFile('POST "/loginAuth"\nUser is not authorized to log in.');
       return res.status(401).redirect('/');
@@ -332,7 +332,7 @@ app.post('/moveTo', (req, res) => {
 
   if (!fileExists(dir)) {
     appendToLogFile('POST "/moveTo"\nDirectory does not exist.');
-    return res.status(400).send('The path you entered is incorrect or does not exist, try again.');
+    return res.status(400).send('The folder does not exist. Try again.');
   } else {
     // if errors occur, consider changing "forEach" to "every"
     listOfFiles.forEach((file) => {
