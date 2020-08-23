@@ -1,6 +1,6 @@
 body {
     margin-top: 1rem;
-    background-color: lavender;
+    background-color: #EFEFEF;
 }
 
 .centered-title {
@@ -28,9 +28,37 @@ body {
 }
 
 .button-group-flex > * {
+    margin: 0 0.5rem;
     flex-grow: 1;
+    width: 100%;
 }
 
-#select-all-btn {
-    margin: 0 0.5rem;
+.button-group-flex > *:first-child {
+    margin-left: 0;
+}
+
+.button-group-flex > *:last-child {
+    margin-right: 0;
+}
+
+@media screen and (max-width: 424px) {
+    .button-group-flex {
+        flex-wrap: wrap;
+    }
+    
+    .button-group-flex > * {
+        width: auto;
+        margin: 0 0.25rem;
+    }
+}
+
+@media screen and (max-width: 400px) {
+    .button-group-flex > * {
+        margin: 0 0.15rem;
+    }
+
+    #delete-btn {
+        margin: 0;
+        margin-top: 0.5rem;
+    }
 }
