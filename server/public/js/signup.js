@@ -22,6 +22,11 @@ function passwordsMatch(password, password2) {
   return (password === password2) ? true : false;
 }
 
+// When button is clicked, will redirect to "/home" url route
+const goBackButton = document.getElementById('go-back-btn');
+goBackButton.addEventListener('click', () => window.location.replace('/home'));
+
+// Upon form submission, will validate username and password before sending to server and overwriting it
 const signupForm = document.getElementById('signup-form');
 signupForm.addEventListener('submit', async (e) => {
   e.preventDefault();
