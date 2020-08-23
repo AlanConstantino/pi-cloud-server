@@ -229,3 +229,11 @@ moveToBtn.addEventListener('click', () => {
     }
   });
 });
+
+// when you click on the logout button, you get sent to the '/logout' url route
+const logoutBtn = document.getElementById('logout-btn');
+logoutBtn.addEventListener('click', () => window.location.replace('/logout'));
+
+// when you click on the update login credentials button, you get sent to the '/signup' url route
+const updateCredentialsBtn = document.getElementById('update-creds-btn');
+updateCredentialsBtn.addEventListener('click', () => window.location.replace('/signup'));
