@@ -104,7 +104,7 @@ function updateUserJsonFile(path, userObject) {
 const storagePath = (() => {
   const originalPath = __dirname.split(nodePath.sep);
   originalPath.pop();
-  const systemAgnosticPath = nodePath.normalize(nodePath.join(...originalPath, '/users/username/home'));
+  const systemAgnosticPath = nodePath.normalize(nodePath.join(...originalPath, '/home'));
   const pathContainsBeginningSlash = systemAgnosticPath[0] === nodePath.sep;
 
   if (!pathContainsBeginningSlash) {
