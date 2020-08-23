@@ -34,6 +34,37 @@ const createCheckbox = (id) => {
   return inputTag;
 };
 
+// checkbox helper functions
+const getAllCheckedBoxes = (checkboxes) => checkboxes.filter((box) => box.checked);
+const checkedBoxesAreValid = (checkedBoxes) => ((checkedBoxes !== undefined) && (checkedBoxes.length !== 0));
+const saveCheckedBoxesAsAListOfPaths = (checkedBoxes) => {
+  const list = [];
+  const filePath = (window.location.pathname).replace('/home', '');
+  checkedBoxes.forEach((box) => list.push(`${filePath}${box.id}`));
+  return list;
+};
+
+// API helper functions
+const createUrl = (parameter) => window.location.origin + parameter;
+const sendFileNamesToServer = async (url, data, method) => {
+  const options = {
+    method: method,
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(data)
+  };
+  return await fetch(url, options);
+};
+
+// verification helper function
+const isValid = (input) => {
+  if (input === undefined || input === '' || input === null) {
+    return false;
+  }
+  return true;
+};
+
 const exampleRow = document.getElementById('example-row');
 const tbody = document.getElementById('tbody');
 const listItems = [ ...document.getElementById('files').children ];
@@ -57,29 +88,6 @@ listItems.forEach((item) => {
 
   appendNode(rowNum, checkbox);
 });
-
-// checkbox helper functions
-const getAllCheckedBoxes = (checkboxes) => checkboxes.filter((box) => box.checked);
-const checkedBoxesAreValid = (checkedBoxes) => ((checkedBoxes !== undefined) && (checkedBoxes.length !== 0));
-const saveCheckedBoxesAsAListOfPaths = (checkedBoxes) => {
-  const list = [];
-  const filePath = (window.location.pathname).replace('/home', '');
-  checkedBoxes.forEach((box) => list.push(`${filePath}${box.id}`));
-  return list;
-};
-
-// API helper functions
-const createUrl = (parameter) => window.location.origin + parameter;
-const sendFileNamesToServer = async (url, data, method) => {
-  const options = {
-    method: method,
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(data)
-  };
-  return await fetch(url, options);
-};
 
 const checkboxForm = document.getElementById('checkbox-form');
 const checkboxes = [ ...document.getElementsByClassName('checkbox') ];
@@ -156,22 +164,11 @@ selectAllBtn.addEventListener('click', () => {
   checkboxes.forEach((box) => box.checked = true);
 });
 
-const menuBtn = document.getElementById('menu-btn');
-menuBtn.addEventListener('click', () => window.location.href = createUrl('/menu'));
-
 const uploadBtn = document.getElementById('upload-btn');
 uploadBtn.addEventListener('click', () => {
   const path = window.location.pathname;
   window.location.href = createUrl(`/upload/?path=${path}`);
 });
-
-
-const isValid = (input) => {
-  if (input === undefined || input === '' || input === null) {
-    return false;
-  }
-  return true;
-};
 
 // sends GET request to '/createFolder' with dirName and path passed in the URL
 const createFolderModalForm = document.getElementById('create-folder-form-modal');
@@ -232,3 +229,11 @@ moveToBtn.addEventListener('click', () => {
     }
   });
 });
+
+// when you click on the logout button, you get sent to the '/logout' url route
+const logoutBtn = document.getElementById('logout-btn');
+logoutBtn.addEventListener('click', () => window.location.replace('/logout'));
+
+// when you click on the update login credentials button, you get sent to the '/signup' url route
+const updateCredentialsBtn = document.getElementById('update-creds-btn');
+updateCredentialsBtn.addEventListener('click', () => window.location.replace('/signup'));

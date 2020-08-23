@@ -11,21 +11,42 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/favicons/favicon-16x16.png">
     <link rel="manifest" href="/favicons/site.webmanifest">
     <link rel="stylesheet" href="/css/style.css">
-    <title>Menu</title>
+    <title>Signup</title>
 </head>
 
 <body>
-    <!-- Menu -->
     <div class="container">
         <div class="row">
             <div class="col">
-                <button id="home-btn" type="button" class="btn btn-primary btn-block">Home</button>
-                <button id="upload-btn" type="button" class="btn btn-primary btn-block">Upload</button>
-                <button id="logout-btn" type="button" class="btn btn-dark btn-block">Logout</button>
+                <form id="signup-form">
+                    <!-- title -->
+                    <div class="form-group centered-title">
+                        <h1>Update Login Credentials</h1>
+                    </div>
+                    <!-- username -->
+                    <div class="form-group">
+                        <input required type="text" class="form-control" id="username" placeholder="Username"
+                            name="username">
+                    </div>
+                    <!-- password -->
+                    <div class="form-group">
+                        <input required type="password" class="form-control" id="password" placeholder="Password"
+                            name="password">
+                    </div>
+                    <div class="form-group">
+                        <input required type="password" class="form-control" id="password-confirmation"
+                            placeholder="Confirm your password" name="password">
+                    </div>
+                    <!-- button -->
+                    <div class="form-group">
+                        <input type="submit" class="btn btn-primary btn-block" value="Submit">
+                        <input id="go-back-btn" type="button" class="btn btn-secondary btn-block" value="Go back">
+                    </div>
+                </form>
             </div>
         </div>
     </div>
-    <script src="/js/menu.js"></script>
+    <script src="/js/signup.js"></script>
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
         integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
         crossorigin="anonymous"></script>

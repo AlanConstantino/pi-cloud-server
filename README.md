@@ -12,8 +12,8 @@ Note: I tried to keep this project as simple as possible... keyword "tried."
   - For backend
 - [Express.js](https://expressjs.com/)
   - For API calls
-- [Google Sheets/Excel (soon)](https://www.npmjs.com/package/google-spreadsheet)
-  - For a pseudo-database
+- ~~[Google Sheets/Excel (soon)](https://www.npmjs.com/package/google-spreadsheet)~~
+  - ~~For a pseudo-database~~
 
 ## Libraries
 - [Dropzone.js](https://www.dropzonejs.com/)
