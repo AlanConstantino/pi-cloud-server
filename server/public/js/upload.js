@@ -52,10 +52,6 @@ Dropzone.options.dropzoneArea = {
 
 const url = (route) => `${location.origin}${route}`;
 
-// when you click on the home button, you go to the '/home' url route
-const homeButton = document.getElementById('home-btn');
-homeButton.addEventListener('click', async () => window.location.href = url('/home'));
-
-// when you click on the back button, you go to the '/menu' url route
-const backButton = document.getElementById('menu-btn');
-backButton.addEventListener('click', async () => window.location.href = url('/menu'));
+// when you click on the go back button, you go to the '/home' url route
+const goBackButton = document.getElementById('go-back-btn');
+goBackButton.addEventListener('click', () => window.location.href = url('/home'));
