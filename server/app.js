@@ -185,11 +185,9 @@ app.use(bodyParser.text());
 app.use(bodyParser.raw());
 app.use(zip());
 
-app.get('/', redirectToMenuIfLoggedIn, (req, res) => res.sendFile(views('login.html')));
+app.get('/', redirectHomeIfLoggedIn, (req, res) => res.sendFile(views('login.html')));
 
 app.get('/signup', (req, res) => res.sendFile(views('signup.html')));
-
-app.get('/menu', (req, res) => res.sendFile(views('menu.html')));
 
 app.get('/logout', (req, res) => {
   req.session.destroy((err) => {
@@ -440,9 +438,9 @@ function checkUserAuth(req, res, next) {
 }
 
 // is user logged in
-function redirectToMenuIfLoggedIn(req, res, next) {
+function redirectHomeIfLoggedIn(req, res, next) {
   if (req.session.isUserAuth) {
-    return res.redirect('/menu');
+    return res.redirect('/home');
   } else {
     return next();
   }
