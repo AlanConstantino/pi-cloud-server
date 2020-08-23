@@ -164,9 +164,6 @@ selectAllBtn.addEventListener('click', () => {
   checkboxes.forEach((box) => box.checked = true);
 });
 
-const menuBtn = document.getElementById('menu-btn');
-menuBtn.addEventListener('click', () => window.location.href = createUrl('/menu'));
-
 const uploadBtn = document.getElementById('upload-btn');
 uploadBtn.addEventListener('click', () => {
   const path = window.location.pathname;
