@@ -4,6 +4,7 @@ A Dropbox-like cloud server with a web interface.
 Essentially, it's a server that runs on a [Pi](https://en.wikipedia.org/wiki/Raspberry_Pi) (or any computer really) that allows you to upload/download files through a web interface.
 
 - When uploading folders, it won't upload the folder itself, only the contents of the folder.
+  - The same thing applies for nested folders, you'll just upload the contents of the nested folders, not the folders themselves.
 - I tried to keep this project as simple as possible... keyword "tried."
 
 ## Table of Contents
