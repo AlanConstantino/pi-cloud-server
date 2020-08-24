@@ -3,20 +3,24 @@ A Dropbox-like cloud server with a web interface.
 
 Essentially, it's a server that runs on a [Pi](https://en.wikipedia.org/wiki/Raspberry_Pi) (or any computer really) that allows you to upload/download files through a web interface.
 
-- When uploading folders, it won't upload the folder itself, only the contents of the folder.
-  - The same thing applies for nested folders, you'll just upload the contents of the nested folders, not the folders themselves.
-- I tried to keep this project as simple as possible... keyword "tried."
-
 ## Table of Contents
 - [pi-cloud-server](#pi-cloud-server)
   - [Table of Contents](#table-of-contents)
   - [Tech Stack](#tech-stack)
   - [Libraries](#libraries)
+  - [Notes](#notes)
   - [Install](#install)
   - [Running the server](#running-the-server)
   - [Default login credentials](#default-login-credentials)
   - [Default storage path](#default-storage-path)
   - [Changing default storage path](#changing-default-storage-path)
+  - [Project Images](#project-images)
+    - [Login](#login)
+    - [Home](#home)
+    - [Creating a folder](#creating-a-folder)
+    - [Moving files](#moving-files)
+    - [Updating login credentials (signup)](#updating-login-credentials-signup)
+    - [Upload](#upload)
 
 ## Tech Stack
 - [Boostrap](https://getbootstrap.com/)
@@ -29,6 +33,13 @@ Essentially, it's a server that runs on a [Pi](https://en.wikipedia.org/wiki/Ras
 ## Libraries
 - [Dropzone.js](https://www.dropzonejs.com/)
   - For drag'n'drop uploads
+
+## Notes
+
+- To change the default username and password, you must first sign in with the default credentials (i.e. username = username and password = password) and then click on the "Update login credentials" button.
+- When uploading folders, it won't upload the folder itself, only the contents of the folder.
+  - The same thing applies for nested folders, you'll just upload the contents of the nested folders, not the folders themselves.
+- I tried to keep this project as simple as possible... keyword "tried."
 
 ## Install
 ```
@@ -48,6 +59,7 @@ npm run dev
 ```
 
 ## Default login credentials
+You must first sign in with the default credentials and then click on the "Update login credentials" button to update the login credentials.
 ```
 username: username
 password: password
@@ -77,6 +89,21 @@ Line with your specific path
 const systemAgnosticPath = nodePath.normalize(nodePath.join(...originalPath, '/your/path/here'));
 ```
 
+## Project Images
+### Login
+![Login](project-images/login.png)
 
+### Home
+![Home](project-images/home.png)
 
+### Creating a folder
+![Creating a folder](project-images/creating-a-folder.png)
 
+### Moving files
+![Moving files](project-images/moving-files.png)
+
+### Updating login credentials (signup)
+![Signup](project-images/signup.png)
+
+### Upload
+![Upload](project-images/upload.png)
