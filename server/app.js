@@ -132,10 +132,10 @@ const destination = (req, file, cb) => {
 // only gets called when uploading files
 const filename = (req, file, cb) => {
   const pathExists = filePathExists(nodePath.join(storagePath, file.originalname));
-  const [ , ext ] = file.mimetype.split(nodePath.sep);
+  const [, ext] = file.mimetype.split(nodePath.sep);
 
   if (pathExists) {
-    const [ name ] = file.originalname.split(`.${ext}`);
+    const [name] = file.originalname.split(`.${ext}`);
     console.log(name);
     return cb(null, `${name}-copy.${ext}`);
   }
@@ -166,7 +166,7 @@ app.use(session({
 }));
 app.use(express.static(nodePath.normalize(__dirname + '/public')));
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use('/home', express.static(storagePath), serveIndex(storagePath, { 'template': `${views('home.html')}` }));
+app.use('/home', checkUserAuth, express.static(storagePath), serveIndex(storagePath, { 'template': `${views('home.html')}` }));
 app.use(bodyParser.json());
 app.use(bodyParser.text());
 app.use(bodyParser.raw());
@@ -174,9 +174,9 @@ app.use(zip());
 
 app.get('/', redirectHomeIfLoggedIn, (req, res) => res.sendFile(views('login.html')));
 
-app.get('/signup', (req, res) => res.sendFile(views('signup.html')));
+app.get('/signup', checkUserAuth, (req, res) => res.sendFile(views('signup.html')));
 
-app.get('/logout', (req, res) => {
+app.get('/logout', checkUserAuth, (req, res) => {
   req.session.destroy((err) => {
     if (err) {
       appendToLogFile('GET "/logout"\nError in destroying session.\n' + err);
@@ -188,12 +188,12 @@ app.get('/logout', (req, res) => {
   });
 });
 
-app.get('/upload', (req, res) => {
+app.get('/upload', checkUserAuth, (req, res) => {
   appendToLogFile('GET "/upload" request received.');
   res.sendFile(views('/upload.html'));
 });
 
-app.get('/downloadZip', (req, res) => {
+app.get('/downloadZip', checkUserAuth, (req, res) => {
   const filesAreAvailableToDownload = isArrayValid(req.session.files);
 
   if (!filesAreAvailableToDownload) {
@@ -210,7 +210,7 @@ app.get('/downloadZip', (req, res) => {
   res.zip(filesToDownload);
 });
 
-app.get('/createFolder', (req, res) => {
+app.get('/createFolder', checkUserAuth, (req, res) => {
   const pathName = req.query.path;
   const dirName = req.query.dirName;
 
@@ -232,7 +232,7 @@ app.get('/createFolder', (req, res) => {
   });
 });
 
-app.post('/signupAuth', (req, res) => {
+app.post('/signupAuth', checkUserAuth, (req, res) => {
   const userJsonFile = nodePath.normalize('./user.json');
   const username = req.body.username;
   const password = req.body.password;
@@ -268,7 +268,7 @@ app.post('/loginAuth', async (req, res) => {
   }
 });
 
-app.post('/uploadAuth', upload.array('uploaded-files'), (req, res) => {
+app.post('/uploadAuth', checkUserAuth, upload.array('uploaded-files'), (req, res) => {
   const filesAreAvailableToUpload = isArrayValid(req.files);
 
   if (!filesAreAvailableToUpload) {
@@ -280,7 +280,7 @@ app.post('/uploadAuth', upload.array('uploaded-files'), (req, res) => {
   return res.status(200).send('File(s) have been uploaded successfully.');
 });
 
-app.post('/download', (req, res) => {
+app.post('/download', checkUserAuth, (req, res) => {
   const listOfFilesExist = isArrayValid(req.body.fileNames);
 
   if (!listOfFilesExist) {
@@ -299,7 +299,7 @@ app.post('/download', (req, res) => {
   return res.status(200).send('Files downloaded successfully.');
 });
 
-app.post('/moveTo', (req, res) => {
+app.post('/moveTo', checkUserAuth, (req, res) => {
   const destinationDir = req.body.destinationDir;
   const listOfFiles = req.body.listOfFiles;
 
@@ -349,7 +349,7 @@ app.post('/moveTo', (req, res) => {
 });
 
 // called whenever 'Delete' button is clicked with checkmarked files
-app.delete('/deleteCheckmarked', (req, res) => {
+app.delete('/deleteCheckmarked', checkUserAuth, (req, res) => {
   const files = req.body.fileNames;
   const listOfFilesExist = isArrayValid(files);
 
